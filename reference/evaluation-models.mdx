@@ -1,0 +1,303 @@
+---
+title: "Evaluation models"
+description: "Models for rubrics, evaluator assignments, schedule slots, and evaluation submissions."
+---
+
+Evaluation data is split between two apps. The `coordinador` app holds the canonical definitions — rubrics, criteria, evaluable project slots, and evaluator assignments. The `evaluador` app holds evaluation submissions (`EvaluacionEntrega`) and per-criterion scores (`EvaluacionRespuestaCriterio`). Both apps also carry local read-side copies of some models for use in evaluator-scoped queries.
+
+---
+
+## ActividadCronograma
+
+A single time-bounded activity in an event's public schedule.
+
+<ParamField path="evento" type="ForeignKey → Evento" required>
+  The event this activity belongs to.
+</ParamField>
+
+<ParamField path="titulo" type="string" required>
+  Activity title. Max 180 characters.
+</ParamField>
+
+<ParamField path="inicio" type="time" required>
+  Start time. Validated to be strictly before `fin`.
+</ParamField>
+
+<ParamField path="fin" type="time" required>
+  End time. Must be greater than `inicio`; enforced in `clean()`.
+</ParamField>
+
+<ParamField path="responsable" type="string">
+  Name of the person or team responsible. Max 180 characters. Optional.
+</ParamField>
+
+---
+
+## Inscripcion
+
+Records a user's enrollment in an event with a specific role. Each user can appear at most once per event (`unique_together` on `evento` and `usuario`).
+
+<ParamField path="evento" type="ForeignKey → Evento" required>
+  The event the user is enrolled in.
+</ParamField>
+
+<ParamField path="usuario" type="ForeignKey → Usuario" required>
+  The enrolled user.
+</ParamField>
+
+<ParamField path="rol" type="string" required>
+  The role under which the user participates. Choices: `ADMINISTRADOR`, `COORDINADOR`, `USUARIO`, `EVALUADOR`, `PONENTE`, `PARTICIPANTE`.
+</ParamField>
+
+---
+
+## EvaluacionProyecto
+
+Defines an evaluable slot — a project or ponencia time block that evaluators can be assigned to. This is the canonical record that `EvaluacionAsignacion`, `Rubrica`, and `Espacio` all reference.
+
+<ParamField path="evento" type="ForeignKey → Evento" required>
+  The event this slot belongs to.
+</ParamField>
+
+<ParamField path="titulo" type="string" required>
+  Title of the project or presentation. Max 220 characters.
+</ParamField>
+
+<ParamField path="ponente" type="string">
+  Display name of the speaker or lead presenter. Max 180 characters. Optional.
+</ParamField>
+
+<ParamField path="inicio" type="time" required>
+  Scheduled start time. Validated to be strictly before `fin`.
+</ParamField>
+
+<ParamField path="fin" type="time" required>
+  Scheduled end time. Must be greater than `inicio`.
+</ParamField>
+
+<ParamField path="lugar" type="string">
+  Room or location name. Max 180 characters. Optional.
+</ParamField>
+
+---
+
+## EvaluacionAsignacion
+
+Links a single evaluator to a single `EvaluacionProyecto`. Each evaluator can appear at most once per project (`unique_together` on `proyecto` and `evaluador`).
+
+<ParamField path="proyecto" type="ForeignKey → EvaluacionProyecto" required>
+  The evaluable slot being assigned.
+</ParamField>
+
+<ParamField path="evaluador" type="ForeignKey → Usuario" required>
+  The evaluator user being assigned.
+</ParamField>
+
+<Note>
+  `EvaluacionAsignacion.clean()` checks for time-slot conflicts before saving. If the same evaluator already has an assignment in the same event whose time range overlaps with the new project's `inicio`/`fin` interval, a `ValidationError` is raised. Overlap is detected with the condition `proyecto__inicio__lt=p.fin AND proyecto__fin__gt=p.inicio`, which matches any partial or full overlap. This check is applied by both the `coordinador` and `evaluador` app versions of the model.
+</Note>
+
+---
+
+## Rubrica
+
+An evaluation rubric linked to either an `EvaluacionProyecto` or a `Ponencia` — but not both. The `coordinador` version is canonical; the `evaluador` version is a local read-side copy.
+
+<ParamField path="evento" type="ForeignKey → Evento" required>
+  The event this rubric belongs to.
+</ParamField>
+
+<ParamField path="proyecto" type="ForeignKey → EvaluacionProyecto">
+  Optional link to an evaluable project slot. Nullable.
+</ParamField>
+
+<ParamField path="ponencia" type="ForeignKey → Ponencia">
+  Optional link to a ponencia. Nullable. Only available in the `coordinador` version.
+</ParamField>
+
+<ParamField path="titulo" type="string" required>
+  Rubric title. Max 220 characters.
+</ParamField>
+
+<ParamField path="estado" type="string" required>
+  Workflow state. Defaults to `BORRADOR`.
+
+  | Value | Display label |
+  |---|---|
+  | `BORRADOR` | Borrador |
+  | `ACTIVA` | Activa |
+</ParamField>
+
+### Properties
+
+<ResponseField name="puntaje_maximo" type="integer">
+  Sum of `puntaje_max` across all related `RubricaCriterio` records. Computed at runtime from the `criterios` reverse relation.
+</ResponseField>
+
+<ResponseField name="tipo_objetivo" type="string">
+  Returns `"PONENCIA"` if `ponencia_id` is set, otherwise `"PROYECTO"`.
+</ResponseField>
+
+<ResponseField name="objetivo_titulo" type="string">
+  Returns the title of the linked ponencia or project. Returns `"Sin asignar"` if neither is set.
+</ResponseField>
+
+---
+
+## RubricaCriterio
+
+A single evaluation criterion within a rubric.
+
+<ParamField path="rubrica" type="ForeignKey → Rubrica" required>
+  The rubric this criterion belongs to.
+</ParamField>
+
+<ParamField path="titulo" type="string" required>
+  Criterion title. Max 180 characters.
+</ParamField>
+
+<ParamField path="descripcion" type="string">
+  Longer description or guidance for evaluators. Optional.
+</ParamField>
+
+<ParamField path="puntaje_max" type="integer" required>
+  Maximum score for this criterion. Must be greater than 0. Defaults to `1`.
+</ParamField>
+
+<ParamField path="orden" type="integer" required>
+  Display order within the rubric. Criteria are ordered by `orden` ascending. Defaults to `1`.
+</ParamField>
+
+---
+
+## RubricaAdjunto
+
+A file attachment associated with a rubric — for example, supplementary instructions or reference documents.
+
+<ParamField path="rubrica" type="ForeignKey → Rubrica" required>
+  The rubric this file is attached to.
+</ParamField>
+
+<ParamField path="archivo" type="file" required>
+  Uploaded file. Stored under `rubricas/evento_<id>/`.
+</ParamField>
+
+<ParamField path="nombre_original" type="string">
+  Original filename as uploaded. Max 255 characters. Optional.
+</ParamField>
+
+<ParamField path="tamano" type="integer">
+  File size in bytes. Populated automatically from `archivo.size` on save.
+</ParamField>
+
+---
+
+## Espacio
+
+A physical room or area assigned to a project or ponencia during an event. Each project or ponencia can have at most one space assignment.
+
+<ParamField path="evento" type="ForeignKey → Evento" required>
+  The event this space assignment belongs to.
+</ParamField>
+
+<ParamField path="proyecto" type="ForeignKey → EvaluacionProyecto">
+  The project this space is assigned to. Mutually exclusive with `ponencia`.
+</ParamField>
+
+<ParamField path="ponencia" type="ForeignKey → Ponencia">
+  The ponencia this space is assigned to. Mutually exclusive with `proyecto`.
+</ParamField>
+
+<ParamField path="nombre" type="string" required>
+  Room or area name. Max 180 characters. Used for conflict checks (case-insensitive).
+</ParamField>
+
+<ParamField path="tipo" type="string" required>
+  Space type. Defaults to `SALA`.
+
+  | Value | Display label |
+  |---|---|
+  | `AUDITORIO` | Auditorio |
+  | `SALA` | Sala |
+  | `LABORATORIO` | Laboratorio |
+  | `OTRO` | Otro |
+</ParamField>
+
+<ParamField path="capacidad" type="integer">
+  Maximum occupancy. Defaults to `0`.
+</ParamField>
+
+<ParamField path="ubicacion" type="string">
+  Physical location description. Max 220 characters. Optional.
+</ParamField>
+
+<ParamField path="inicio" type="time">
+  Start of the reserved time window. Required by `clean()`.
+</ParamField>
+
+<ParamField path="fin" type="time">
+  End of the reserved time window. Must be greater than `inicio`. Required by `clean()`.
+</ParamField>
+
+<ParamField path="estado" type="string" required>
+  Availability state. Defaults to `DISPONIBLE`.
+
+  | Value | Display label |
+  |---|---|
+  | `DISPONIBLE` | Disponible |
+  | `OCUPADO` | Ocupado |
+  | `MANTENIMIENTO` | Mantenimiento |
+</ParamField>
+
+---
+
+## EvaluacionEntrega
+
+An evaluator's completed (or draft) assessment for an assigned project. Defined in the `evaluador` app.
+
+<ParamField path="asignacion" type="OneToOneField → EvaluacionAsignacion" required>
+  The assignment this submission corresponds to. One assignment can have at most one submission.
+</ParamField>
+
+<ParamField path="calificacion" type="decimal" required>
+  Overall score. Up to 3 digits with 1 decimal place. Defaults to `0.0`.
+</ParamField>
+
+<ParamField path="observaciones_generales" type="string">
+  General evaluator remarks. Optional.
+</ParamField>
+
+<ParamField path="estado" type="string" required>
+  Submission state. Defaults to `BORRADOR`.
+
+  | Value | Display label |
+  |---|---|
+  | `BORRADOR` | Borrador |
+  | `ENVIADA` | Enviada |
+</ParamField>
+
+<ParamField path="fecha_envio" type="datetime">
+  Timestamp of final submission. Nullable — `null` means not yet submitted.
+</ParamField>
+
+---
+
+## EvaluacionRespuestaCriterio
+
+Records an evaluator's score for a single rubric criterion within a submission. Defined in the `evaluador` app.
+
+<ParamField path="entrega" type="ForeignKey → EvaluacionEntrega" required>
+  The submission this score belongs to.
+</ParamField>
+
+<ParamField path="criterio" type="ForeignKey → RubricaCriterio" required>
+  The criterion being scored. Combined with `entrega`, this pair is unique.
+</ParamField>
+
+<ParamField path="valor" type="integer" required>
+  Score for this criterion. Must be between 1 and 5 inclusive, enforced in `clean()`.
+</ParamField>
+
+<ParamField path="observacion" type="string">
+  Criterion-level evaluator remark. Optional.
+</ParamField>

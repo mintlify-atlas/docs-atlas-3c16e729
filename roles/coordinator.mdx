@@ -1,0 +1,92 @@
+---
+title: "Coordinator guide"
+description: "How to use the Coordinator dashboard in SIGEP"
+sidebarTitle: "Coordinator"
+icon: "calendar"
+---
+
+The Coordinator (role code `COOR`) manages the complete operational lifecycle of an event: schedule, registrations, evaluators, rubrics, venue spaces, and reports. All coordinator work takes place within a **selected active event**.
+
+<Tip>
+  Select your active event first. Before managing the schedule, inscriptions, evaluators, or any other module, go to `/coordinador/evento/seleccionar/` and pick the event you want to work on. Every action in the coordinator module applies to that event until you switch to another.
+</Tip>
+
+## Dashboard
+
+After logging in you are redirected to `/coordinador/`. The dashboard summarizes the active event's status: inscription count, cronograma entries, pending evaluations, and recent activity.
+
+## Responsibilities
+
+<AccordionGroup>
+  <Accordion title="Event management">
+    Create and edit events at `/coordinador/eventos/`. Each event moves through three states:
+
+    | State | Meaning |
+    |---|---|
+    | `BORRADOR` | Draft — only visible to coordinators and administrators |
+    | `PUBLICADO` | Published — open for registrations, speaker submissions, and scheduling |
+    | `CERRADO` | Closed — no further registrations; participants and speakers can download certificates |
+
+    To change an event's state, use the state control on the event detail page (routed through `/coordinador/evento/<pk>/estado/`). To switch which event is currently active, go to `/coordinador/evento/seleccionar/` or use the direct selector at `/coordinador/evento/<pk>/seleccionar/`.
+  </Accordion>
+
+  <Accordion title="Schedule (cronograma)">
+    Manage the event program at `/coordinador/cronograma/`. Each entry is an `ActividadCronograma` record with a title (`titulo`), start time (`inicio`), end time (`fin`), and an optional responsible person (`responsable`). Start time must be strictly before end time.
+
+    - **Add an activity** — click **Agregar actividad** and fill in the form. The activity is saved via `/coordinador/cronograma/guardar/`.
+    - **Remove an activity** — use the delete control for any entry, which calls `/coordinador/cronograma/<pk>/eliminar/`.
+
+    Schedule entries are visible to participants, speakers, and evaluators through their respective horario views.
+  </Accordion>
+
+  <Accordion title="Inscriptions">
+    View and manage participant registrations at `/coordinador/inscripciones/`. From this page you can:
+
+    - Add a registered user to the event via `/coordinador/inscripciones/guardar/`.
+    - Remove a registration via `/coordinador/inscripciones/<user_id>/eliminar/`.
+    - Export the full inscription list as a CSV file via `/coordinador/inscripciones/exportar/csv/`.
+  </Accordion>
+
+  <Accordion title="Evaluators">
+    Assign evaluators to projects at `/coordinador/evaluadores/`. The workflow uses two sub-actions:
+
+    - **Add a project for evaluation** — `/coordinador/evaluadores/proyecto/guardar/`
+    - **Remove a project assignment** — `/coordinador/evaluadores/proyecto/<pk>/eliminar/`
+    - **Manage evaluator assignment** — `/coordinador/evaluadores/gestionar/guardar/`
+
+    SIGEP prevents assigning an evaluator to two projects with overlapping time slots. Resolve scheduling conflicts in the cronograma before assigning evaluators.
+  </Accordion>
+
+  <Accordion title="Rubrics">
+    Create and manage evaluation rubrics at `/coordinador/rubricas/`. A rubric contains one or more criteria, each with a name, description, and weight. Only an **active** rubric is used when evaluators submit scores.
+
+    - **Save a rubric** — `/coordinador/rubricas/guardar/`
+    - **Download an attachment** — `/coordinador/rubricas/adjuntos/<pk>/descargar/`
+    - **Delete an attachment** — `/coordinador/rubricas/adjuntos/<pk>/eliminar/`
+    - **Delete a rubric** — `/coordinador/rubricas/<pk>/eliminar/`
+  </Accordion>
+
+  <Accordion title="Spaces">
+    Assign venue spaces at `/coordinador/espacios/`. Each space has a name, capacity, and optional location notes.
+
+    - **Save a space** — `/coordinador/espacios/guardar/`
+    - **Delete a space** — `/coordinador/espacios/<pk>/eliminar/`
+
+    Spaces defined here are available for selection when building the cronograma and when scheduling speaker ponencias.
+  </Accordion>
+
+  <Accordion title="Reports">
+    Generate and download reports at `/coordinador/reportes/`. Reports are generated on demand and stored so they can be re-downloaded later.
+
+    | Action | URL |
+    |---|---|
+    | Generate a new report | `/coordinador/reportes/generar/` |
+    | Download an existing report | `/coordinador/reportes/<pk>/descargar/` |
+    | Edit report metadata | `/coordinador/reportes/<pk>/editar/` |
+    | Delete a report | `/coordinador/reportes/<pk>/eliminar/` |
+  </Accordion>
+</AccordionGroup>
+
+## Configuration
+
+Update your coordinator account details and preferences at `/coordinador/configuracion/`.

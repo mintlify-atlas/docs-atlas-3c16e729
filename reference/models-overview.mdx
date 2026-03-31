@@ -1,0 +1,54 @@
+---
+title: "Data models overview"
+description: "An overview of all SIGEP data models organized by Django app module."
+---
+
+SIGEP's data layer is split across six Django apps. Each app owns the models that correspond to its role in the platform. The table below lists every model and the app that defines it.
+
+## Models by module
+
+| Module | Model | Description |
+|---|---|---|
+| `principal` | `Usuario` | Central custom user model extending `AbstractUser` |
+| `principal` | `SolicitudRecuperacionCuenta` | Password-recovery token lifecycle |
+| `administrador` | `Evento` | Academic event definition |
+| `administrador` | `ConfiguracionSistema` | Key/value system configuration store |
+| `administrador` | `AuditoriaLog` | Audit trail for user actions and authentication events |
+| `coordinador` | `PerfilUsuario` | Extended profile for coordinator-role users |
+| `coordinador` | `ActividadCronograma` | Scheduled activity within an event's agenda |
+| `coordinador` | `Inscripcion` | User enrollment in an event with a role assignment |
+| `coordinador` | `EvaluacionProyecto` | Evaluable project or presentation slot |
+| `coordinador` | `EvaluacionAsignacion` | Evaluator-to-project assignment with conflict detection |
+| `coordinador` | `Rubrica` | Evaluation rubric linked to a project or ponencia |
+| `coordinador` | `RubricaCriterio` | Individual criterion within a rubric |
+| `coordinador` | `RubricaAdjunto` | File attachment for a rubric |
+| `coordinador` | `Espacio` | Physical space assigned to a project or ponencia |
+| `coordinador` | `Reporte` | Generated report file for an event |
+| `evaluador` | `PerfilUsuario` | Extended profile for evaluator-role users |
+| `evaluador` | `EvaluacionEntrega` | Evaluator's completed assessment for an assignment |
+| `evaluador` | `EvaluacionRespuestaCriterio` | Per-criterion score within an evaluation submission |
+| `evaluador` | `Rubrica` | Read-side rubric copy consumed by the evaluator module |
+| `evaluador` | `RubricaCriterio` | Read-side rubric criterion copy |
+| `ponente` | `PerfilPonente` | Speaker profile with institution and specialty fields |
+| `ponente` | `Ponencia` | Speaker submission with documents, scheduling, and certificate state |
+| `participante` | `PerfilParticipante` | Participant profile |
+| `participante` | `ProyectoParticipante` | Project submitted by a participant |
+| `participante` | `PaseAccesoParticipante` | UUID-based QR access pass for a project |
+| `participante` | `ConstanciaParticipante` | Participation certificate with a unique folio |
+
+## Reference pages
+
+<CardGroup cols={2}>
+  <Card title="User model" icon="user" href="/reference/user-model">
+    The `Usuario` custom user model and the `SolicitudRecuperacionCuenta` account-recovery flow.
+  </Card>
+  <Card title="Event models" icon="calendar" href="/reference/event-models">
+    `Evento`, `ConfiguracionSistema`, and `AuditoriaLog` — the administrative backbone of every event.
+  </Card>
+  <Card title="Evaluation models" icon="clipboard-check" href="/reference/evaluation-models">
+    Rubrics, evaluator assignments, schedule slots, and evaluation submissions.
+  </Card>
+  <Card title="Participation models" icon="presentation-screen" href="/reference/participation-models">
+    Speaker ponencias, participant projects, access passes, and certificates.
+  </Card>
+</CardGroup>

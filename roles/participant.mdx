@@ -1,0 +1,85 @@
+---
+title: "Participant guide"
+description: "How to use the Participant dashboard in SIGEP"
+sidebarTitle: "Participant"
+icon: "user"
+---
+
+The Participant (role code `PART`) registers a project for an academic event, uploads supporting documents, tracks the event program, and collects a QR access pass and participation certificate. Your panel is at `/participante/`.
+
+## Participation workflow
+
+<Steps>
+  <Step title="Choose an event and register your project">
+    Go to `/participante/evento/elegir/` and select an open event. Fill in your project details:
+
+    - Project name
+    - Category (Tecnología, Innovación, Investigación, Impacto social, or Emprendimiento)
+    - Number of team members
+    - Abstract (`resumen`)
+    - Institution / company name
+
+    After submitting, your project state is `REGISTRADO`.
+  </Step>
+  <Step title="Upload project documents">
+    Go to `/participante/gestion/` to manage your project. Upload the required files:
+
+    | Document | Formats | Max size |
+    |---|---|---|
+    | Presentation (`presentacion`) | PDF, PPT, PPTX | 25 MB |
+    | Report (`informe`) | PDF, DOC, DOCX | 15 MB |
+
+    The `porcentaje_documentacion()` method tracks completion across three items — abstract (`resumen`), presentation, and report — and shows a 0–100% progress indicator on the management page.
+  </Step>
+  <Step title="Monitor your project state">
+    Your project moves through the following states:
+
+    | State | Meaning |
+    |---|---|
+    | `REGISTRADO` | Submitted, awaiting coordinator review |
+    | `EN_REVISION` | Under review by the coordinator |
+    | `ACEPTADO` | Accepted and scheduled |
+    | `RECHAZADO` | Not accepted for this event |
+
+    You can edit your project while it is in `REGISTRADO` or `EN_REVISION` state.
+  </Step>
+  <Step title="Get your QR access pass">
+    Go to `/participante/pase/` to view your QR access pass. The pass is a `PaseAccesoParticipante` record with a unique UUID token. Event staff can validate your pass at `/participante/pase/validar/<token>/`. Each scan is recorded along with a timestamp.
+  </Step>
+  <Step title="View the event program">
+    Browse the full event schedule at `/participante/programa/`.
+  </Step>
+  <Step title="Download your participation certificate">
+    Go to `/participante/constancia/` to generate and preview your certificate. Download the PDF directly at `/participante/constancia/pdf/`.
+
+    Each certificate has a unique folio number in the format `SIGEP-CP-YYYYMMDD-XXXXXXXX`, generated automatically when the certificate is first created.
+  </Step>
+</Steps>
+
+## Project categories
+
+When registering your project, select the category that best describes your work:
+
+| Code | Display name |
+|---|---|
+| `TECNOLOGIA` | Tecnología |
+| `INNOVACION` | Innovación |
+| `INVESTIGACION` | Investigación |
+| `SOCIAL` | Impacto social |
+| `EMPRESARIAL` | Emprendimiento |
+
+## QR access pass
+
+Your pass is generated automatically when your project is registered. Key details:
+
+- The token is a UUID and is unique across the entire platform.
+- The pass can be active or inactive (`activo` flag).
+- Every scan increments `total_escaneos` and records `ultimo_escaneo`.
+
+<Note>
+  If you need a new QR code (for example, if your token was compromised), contact the coordinator to regenerate your pass token.
+</Note>
+
+## Settings
+
+Update your profile and account preferences at `/participante/configuracion/`.

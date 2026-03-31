@@ -1,0 +1,83 @@
+---
+title: "Administrator URL reference"
+description: All URL routes accessible to Administrators in SIGEP.
+keywords: ["administrator", "urls", "routes", "admin", "sigep"]
+---
+
+This page documents every HTTP route available to users with the Administrator role in SIGEP, as well as the public routes that require no authentication.
+
+<Info>
+  Administrator routes are mounted under `/administrador/`. All routes in that group require the user to be authenticated and assigned the ADMIN role. Requests from unauthenticated users or users with other roles will be rejected.
+</Info>
+
+## Public routes
+
+These routes are accessible without authentication. They are defined in `home/urls.py` and `principal/urls.py`.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/` | Public ranking dashboard. Displays the event ranking to all visitors. |
+| `GET` | `/ranking/data/` | Returns current ranking data as a JSON response. Used by the dashboard to populate ranking tables. |
+| `POST` | `/login/` | Authenticates a user. Accepts credentials in the request body and establishes a session on success. |
+| `POST` | `/registrar/` | Registers a new user account. Accepts registration form data in the request body. |
+| `POST` | `/recuperar/` | Initiates account recovery. Sends a password-reset message to the submitted email address. |
+| `GET`, `POST` | `/set-password/<uidb64>/<token>/` | Sets a new password using a link sent by email. The `uidb64` and `token` path parameters identify and validate the invitation. |
+
+<Note>
+  The `GET /` route is served by the `home` app's `index` view, which renders the public ranking dashboard. The `principal` app's `dashboard` view is a fallback rendered when authenticated users have no matching role redirect — it is not the same as the home ranking page.
+</Note>
+
+## Administrator routes
+
+All routes below are prefixed with `/administrador/` and require an active session with the ADMIN role.
+
+### Dashboard
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/administrador/` | Main administrator dashboard. Provides an overview of platform activity. |
+
+### Users and roles
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/administrador/usuarios/` | Lists all registered users in the platform. |
+| `POST` | `/administrador/usuarios/crear/` | Creates a new user. Accepts user data submitted from the create-user modal. |
+| `GET` | `/administrador/roles/` | Displays role management. Allows you to view and assign roles to users. |
+
+### Events
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/administrador/eventos/` | Lists all events registered in the platform. |
+
+### Audit log
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/administrador/auditoria/` | Displays the audit log with a history of system activity. |
+| `GET` | `/administrador/auditoria/export/` | Exports the full audit log as a CSV file download. |
+
+### Reports
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/administrador/reporte/csv/` | Exports a general report as a CSV file download. |
+
+### Configuration and profile
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/administrador/configuracion/` | Displays system-wide configuration settings. |
+| `POST` | `/administrador/perfil/actualizar/` | Updates the administrator's profile information. Accepts updated profile fields in the request body. |
+| `POST` | `/administrador/perfil/password/` | Changes the administrator's account password. Requires the current and new password in the request body. |
+
+### Session
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/administrador/salir/` | Logs out the current administrator and ends the session. |
+
+<Tip>
+  The `/administrador/perfil/password/` path is registered twice in `administrador/urls.py` under the names `perfil_password` and `perfil_cambiar_password`. Both names resolve to the same view. Use `perfil_cambiar_password` when generating URLs with `{% url %}` to avoid ambiguity.
+</Tip>

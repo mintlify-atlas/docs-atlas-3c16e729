@@ -1,0 +1,82 @@
+---
+title: "Administrator guide"
+description: "How to use the Administrator dashboard in SIGEP"
+sidebarTitle: "Administrator"
+icon: "shield"
+---
+
+The Administrator (role code `ADMIN`) has full access to every module in SIGEP. From the dashboard at `/administrador/` you can manage users, configure the system, oversee events, and review the complete audit trail.
+
+## Dashboard overview
+
+After logging in, you are redirected to `/administrador/`. The dashboard shows system-wide indicators including registered users, active events, and recent audit events.
+
+## User management
+
+Administrators are the only role that can create and manage other users.
+
+### Creating your first user
+
+<Steps>
+  <Step title="Open the user list">
+    Go to `/administrador/usuarios/`. You see every registered account along with their assigned role and status.
+  </Step>
+  <Step title="Create the account">
+    Click **Crear usuario** to open the creation form at `/administrador/usuarios/crear/`. Fill in the name, email, and assign a role.
+  </Step>
+  <Step title="Password setup email is sent automatically">
+    SIGEP sends a set-password link to the new user's email. The link follows the format `/set-password/<uidb64>/<token>/`. The user must open this link to set their own password before they can log in.
+  </Step>
+  <Step title="Assign a role">
+    Roles are managed separately at `/administrador/roles/`. You can adjust which permissions each role holds and sync user memberships from that page.
+  </Step>
+</Steps>
+
+<Info>
+  Each user belongs to exactly one role group (`SIGEP_ROLE_ADMIN`, `SIGEP_ROLE_COOR`, `SIGEP_ROLE_EVAL`, `SIGEP_ROLE_PON`, `SIGEP_ROLE_PART`). Changing a user's role updates their group membership automatically.
+</Info>
+
+## Role and permission management
+
+Navigate to `/administrador/roles/` to view and edit the permission matrix. SIGEP ships with a built-in permission catalog organized by module:
+
+| Module | Example permissions |
+|---|---|
+| Administrador | `adm_users_create`, `adm_audit_view`, `adm_config_update` |
+| Coordinador | `coord_events_manage`, `coord_rubrics_manage`, `coord_spaces_manage` |
+| Evaluador | `eval_projects_score`, `eval_rubrics_view` |
+| Ponente | `pon_submissions_create`, `pon_materials_upload` |
+| Participante | `part_registrations_create`, `part_constancias_view` |
+
+The `ADMIN` group is automatically granted all permissions in the catalog.
+
+## Event creation
+
+Go to `/administrador/eventos/` to create and oversee events at the platform level. Coordinators handle the day-to-day event workflow; the Administrator module provides a centralized view across all events.
+
+## System configuration
+
+The configuration panel at `/administrador/configuracion/` lets you modify platform-wide parameters such as security settings, support contact details, and maintenance mode.
+
+## Audit log
+
+The audit log at `/administrador/auditoria/` records every significant platform action. You can filter by user, date range, and action type.
+
+<Info>
+  SIGEP automatically records authentication events. The following event types are always captured without any additional configuration:
+
+  - `LOGIN_EXITOSO` — successful login
+  - `LOGOUT` — user session ended
+  - `LOGIN_FALLIDO` — failed login attempt
+</Info>
+
+To export the full log as a CSV file, click **Exportar CSV** or navigate directly to `/administrador/auditoria/export/`.
+
+## Profile management
+
+You can update your own administrator profile or change your password without leaving the admin module:
+
+- **Update profile** — `/administrador/perfil/actualizar/`
+- **Change password** — `/administrador/perfil/password/`
+
+Changing your password via this form updates the session immediately so you are not logged out.

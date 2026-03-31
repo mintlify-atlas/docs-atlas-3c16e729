@@ -1,0 +1,167 @@
+---
+title: "Production deployment"
+description: "Deploying SIGEP to a production server"
+---
+
+Follow these steps to prepare and deploy SIGEP to a production server.
+
+<Warning>
+  Complete steps 1–3 before exposing SIGEP to the internet. Running with `DEBUG = True` or the default `SECRET_KEY` is a serious security risk.
+</Warning>
+
+<Steps>
+  <Step title="Set SECRET_KEY to a strong random value">
+    Generate a new secret key and set it in `settings.py` (or load it from an environment variable):
+
+    ```bash
+    python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+    ```
+
+    ```python settings.py
+    SECRET_KEY = 'your-generated-secret-key'
+    ```
+
+    Store this value securely — for example, in an environment variable or a secrets manager — and never commit it to version control.
+  </Step>
+
+  <Step title="Set DEBUG = False">
+    Disable debug mode so Django does not expose error details to users:
+
+    ```python settings.py
+    DEBUG = False
+    ```
+  </Step>
+
+  <Step title="Set ALLOWED_HOSTS to your domain">
+    Add your domain name or server IP address:
+
+    ```python settings.py
+    ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com']
+    ```
+  </Step>
+
+  <Step title="Switch the database to PostgreSQL">
+    SQLite is not recommended for production workloads. Configure PostgreSQL in `settings.py`:
+
+    ```python settings.py
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'sigep_db',
+            'USER': 'sigep_user',
+            'PASSWORD': 'your-database-password',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
+    ```
+
+    Install the adapter if you haven't already:
+
+    ```bash
+    pip install psycopg2-binary
+    ```
+  </Step>
+
+  <Step title="Configure the email backend">
+    SIGEP sends invite emails containing set-password links. Set your SMTP credentials in `settings.py`:
+
+    ```python settings.py
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.yourprovider.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = 'no-reply@yourdomain.com'
+    EMAIL_HOST_PASSWORD = 'your-email-password'
+    DEFAULT_FROM_EMAIL = 'SIGEP <no-reply@yourdomain.com>'
+    ```
+  </Step>
+
+  <Step title="Collect static files">
+    Gather all static assets into the `staticfiles/` directory so your web server can serve them:
+
+    ```bash
+    python manage.py collectstatic
+    ```
+
+    Configure your web server to serve the `staticfiles/` directory at the `/static/` URL path.
+  </Step>
+
+  <Step title="Configure nginx and gunicorn">
+    A common production setup uses gunicorn as the application server behind nginx.
+
+    Install gunicorn:
+
+    ```bash
+    pip install gunicorn
+    ```
+
+    Start the application server:
+
+    ```bash
+    gunicorn SIGEP.wsgi:application --bind 127.0.0.1:8000 --workers 3
+    ```
+
+    Then configure nginx to proxy requests to gunicorn and serve static files directly:
+
+    ```nginx nginx.conf
+    server {
+        listen 80;
+        server_name yourdomain.com www.yourdomain.com;
+
+        location /static/ {
+            alias /path/to/SIGEP/staticfiles/;
+        }
+
+        location /media/ {
+            alias /path/to/SIGEP/media/;
+        }
+
+        location / {
+            proxy_pass http://127.0.0.1:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+    ```
+  </Step>
+
+  <Step title="Configure media file serving">
+    <Info>
+      Uploaded files (event images, documents) are stored under `MEDIA_ROOT` (the `media/` directory). Your web server must serve this directory at the `/media/` URL path. In production, Django does **not** serve media files automatically — that only happens when `DEBUG = True`.
+    </Info>
+
+    Make sure the `media/` directory exists and is writable by the process running gunicorn:
+
+    ```bash
+    mkdir -p /path/to/SIGEP/media
+    chown -R www-data:www-data /path/to/SIGEP/media
+    ```
+  </Step>
+
+  <Step title="Run migrations on the production database">
+    Apply all database migrations to your production database:
+
+    ```bash
+    python manage.py migrate
+    ```
+
+    Then create a superuser for the production administrator account:
+
+    ```bash
+    python manage.py createsuperuser
+    ```
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration reference" icon="gear" href="/deployment/configuration">
+    Full reference for all configurable settings in SIGEP.
+  </Card>
+  <Card title="Installation" icon="circle-play" href="/deployment/installation">
+    Set up a local development environment.
+  </Card>
+</CardGroup>

@@ -1,80 +1,98 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Quick start"
+description: "Get your first SIGEP event up and running in minutes."
 ---
 
-## Get started in three steps
+<Tip>
+  After logging in, SIGEP automatically redirects you to the dashboard for your role. Administrators go to `/administrador/`, coordinators to `/coordinador/`, and so on — no manual navigation required.
+</Tip>
 
-Get your documentation site running locally and make your first customization.
+## Prerequisites
 
-### Step 1: Set up your local environment
+- SIGEP installed and running (see [Installation](/deployment/installation))
+- A superuser / administrator account (created during installation with `python manage.py createsuperuser`)
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+## Create your first event
 
-### Step 2: Deploy your changes
+<Steps>
+  <Step title="Log in as Administrator">
+    Open your SIGEP instance and navigate to `/login/`. Enter your administrator username (or email) and password.
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    You will be redirected automatically to `/administrador/`.
+  </Step>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+  <Step title="Create the event">
+    From the Administrator dashboard, go to **Eventos** (`/administrador/eventos/`). Click **Crear evento** and fill in the required fields:
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    | Field | Description |
+    |-------|-------------|
+    | Título | The event name |
+    | Descripción | A description of the event |
+    | Fecha | The event date |
+    | Lugar | Venue or location |
+    | Cupo | Maximum capacity (0 = unlimited) |
 
-### Step 3: Go live
+    The event is created in **BORRADOR** (Draft) state. Participants cannot register until it is published.
+  </Step>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+  <Step title="Create and assign a Coordinator">
+    Go to **Usuarios** (`/administrador/usuarios/`) and create a user with the **Coordinador** role, or navigate to `/registrar/` and use the coordinator access code.
+
+    <Note>
+      Registering with the `COOR` role requires the coordinator access code. Contact your system administrator to obtain it.
+    </Note>
+
+    Once the coordinator account exists, the Administrator can assign them to the event through **Roles** (`/administrador/roles/`).
+  </Step>
+
+  <Step title="Configure and publish the event">
+    Log in as the Coordinator (or switch users) and navigate to `/coordinador/`. Select the newly created event at `/coordinador/evento/seleccionar/`.
+
+    From the coordinator dashboard you can:
+    - Add schedule activities at `/coordinador/cronograma/`
+    - Configure rubrics at `/coordinador/rubricas/`
+    - Assign venue spaces at `/coordinador/espacios/`
+
+    When ready, change the event state to **PUBLICADO** at `/coordinador/evento/<pk>/estado/`. The event is now open for registration.
+  </Step>
+
+  <Step title="Invite participants and speakers">
+    Share the registration URL (`/registrar/`) with your attendees. Participants and speakers self-register using their email address and choose the appropriate role:
+
+    - **Ponente** (Speaker) — to submit a presentation proposal
+    - **Participante** — to register a project
+
+    <Tip>
+      The Administrator can also create accounts directly at `/administrador/usuarios/crear/` and send a set-password email to the user so they can set their own password.
+    </Tip>
+  </Step>
+
+  <Step title="Assign evaluators">
+    Once speakers and participants have registered, the Coordinator assigns evaluators to projects at `/coordinador/evaluadores/`. Each evaluator must have the `EVAL` role.
+
+    Evaluators log in and find their assigned projects at `/evaluador/proyectos/`.
+  </Step>
+
+  <Step title="Review results and close the event">
+    During and after the event, the public ranking dashboard at `/` shows real-time scores. When the event is complete, the Coordinator changes the state to **CERRADO** at `/coordinador/evento/<pk>/estado/`.
+
+    Participants and speakers can then download their participation certificates from their respective dashboards.
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Roles overview" icon="users" href="/roles-overview">
+    Learn what each of the five roles can do.
+  </Card>
+  <Card title="Event management" icon="calendar" href="/features/event-management">
+    Deep-dive into the event lifecycle and configuration options.
+  </Card>
+  <Card title="Evaluations and rubrics" icon="clipboard-check" href="/features/evaluations-rubrics">
+    Set up rubrics and manage evaluator assignments.
+  </Card>
+  <Card title="Reports and certificates" icon="file-pdf" href="/features/reports-certificates">
+    Generate reports and issue participation certificates.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

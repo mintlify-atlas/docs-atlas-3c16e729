@@ -1,0 +1,130 @@
+---
+title: "User model"
+description: "The Usuario custom user model and the SolicitudRecuperacionCuenta account-recovery flow."
+---
+
+## Usuario
+
+`Usuario` extends Django's `AbstractUser` and is the single user model for the entire SIGEP platform (`AUTH_USER_MODEL = "principal.Usuario"`). Every other model that references a user points to this model.
+
+Authentication uses `email` as the unique identifier. The separate `nombres`, `apellido_paterno`, and `apellido_materno` fields replace reliance on `AbstractUser`'s `first_name` and `last_name`; those two fields are kept in sync automatically on every `save()` call so that `get_full_name()` and third-party integrations continue to work.
+
+### Fields
+
+<ParamField path="username" type="string" required>
+  Inherited from `AbstractUser`. Used as the login identifier alongside `email`.
+</ParamField>
+
+<ParamField path="email" type="string" required>
+  Unique email address. Used for authentication and account recovery. Stored as `EmailField(unique=True)`.
+</ParamField>
+
+<ParamField path="nombres" type="string">
+  Given name(s). Max 120 characters. Defaults to an empty string.
+</ParamField>
+
+<ParamField path="apellido_paterno" type="string">
+  Paternal surname. Max 80 characters. Defaults to an empty string.
+</ParamField>
+
+<ParamField path="apellido_materno" type="string">
+  Maternal surname. Max 80 characters. Defaults to an empty string.
+</ParamField>
+
+<ParamField path="telefono" type="string">
+  Optional phone number. Max 20 characters. Nullable.
+</ParamField>
+
+<ParamField path="foto" type="file">
+  Optional profile photo. Stored under `perfiles/`. Accepts image files via `ImageField`.
+</ParamField>
+
+<ParamField path="rol" type="string" required>
+  Operational role that controls module routing and permission gates. Indexed. Defaults to `PART`. See the [Rol choices](#rol-choices) table below.
+</ParamField>
+
+<ParamField path="actualizado_en" type="datetime">
+  Timestamp updated automatically on every save (`auto_now=True`).
+</ParamField>
+
+### Rol choices
+
+| Value | Display label | Description |
+|---|---|---|
+| `ADMIN` | Administrador | Full platform administration access |
+| `COOR` | Coordinador | Event coordination and schedule management |
+| `EVAL` | Evaluador/Jurado | Rubric-based project evaluation |
+| `PON` | Ponente | Speaker submission and document upload |
+| `PART` | Participante | Project registration and certificate retrieval |
+
+### Methods and properties
+
+<ResponseField name="get_full_name()" type="string">
+  Returns `nombres apellido_paterno apellido_materno`, trimmed. Falls back to the inherited `AbstractUser.get_full_name()` and then to `username` if all name fields are blank.
+</ResponseField>
+
+<ResponseField name="nombre_completo" type="string">
+  Property. Delegates to `get_full_name()`.
+</ResponseField>
+
+<Note>
+  Every time you save a `Usuario` instance, `first_name` is set to `nombres` and `last_name` is set to `apellido_paterno apellido_materno`. Do not write to `first_name` or `last_name` directly — your changes will be overwritten.
+</Note>
+
+---
+
+## SolicitudRecuperacionCuenta
+
+Tracks password-recovery requests. Each request generates a UUID token that is emailed to the user. The token expires at the time stored in `expira_en` and can only be used once.
+
+### Fields
+
+<ParamField path="id" type="UUID" required>
+  Primary key. Auto-generated UUID (`uuid4`), not editable.
+</ParamField>
+
+<ParamField path="usuario" type="ForeignKey → Usuario" required>
+  The user who initiated the recovery request. Cascades on user deletion.
+</ParamField>
+
+<ParamField path="token" type="UUID" required>
+  Unique, auto-generated UUID used in the recovery link. Not editable. Indexed.
+</ParamField>
+
+<ParamField path="creado_en" type="datetime" required>
+  Timestamp of request creation. Indexed. Defaults to `timezone.now`.
+</ParamField>
+
+<ParamField path="usado_en" type="datetime">
+  Timestamp of when the token was consumed. Nullable — `null` means unused.
+</ParamField>
+
+<ParamField path="activo" type="boolean" required>
+  Whether the token is still valid. Defaults to `True`. Set to `False` by `invalidar()`.
+</ParamField>
+
+<ParamField path="ip_origen" type="string">
+  IP address from which the recovery was requested. Nullable.
+</ParamField>
+
+<ParamField path="user_agent" type="string">
+  Browser or client identifier from the request. Max 255 characters. Nullable.
+</ParamField>
+
+<ParamField path="expira_en" type="datetime" required>
+  Absolute expiry timestamp. Required. Set by the view that creates the request.
+</ParamField>
+
+### Methods
+
+<ResponseField name="esta_expirada()" type="boolean">
+  Returns `True` if `timezone.now() >= expira_en`. Use this to reject stale tokens without querying the database again.
+</ResponseField>
+
+<ResponseField name="invalidar()" type="None">
+  Sets `activo = False` and stamps `usado_en` with the current time if it is not already set. Saves only the two changed fields via `update_fields`.
+</ResponseField>
+
+<Tip>
+  Always call `invalidar()` after a successful password reset so the token cannot be replayed. Combine it with `esta_expirada()` to enforce both expiry and single-use semantics.
+</Tip>

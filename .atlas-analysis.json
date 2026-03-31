@@ -1,0 +1,119 @@
+{
+  "projectType": "saas",
+  "projectName": "SIGEP",
+  "projectDescription": "A Django-based academic event management platform that orchestrates the full lifecycle of conferences and symposiums — from event creation and participant registration to speaker submissions, evaluation rubrics, space scheduling, and certificate generation — across five role-based dashboards.",
+  "theme": "palm",
+  "primaryColor": "#2563EB",
+  "lightColor": "#EFF6FF",
+  "darkColor": "#1E3A8A",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "roles-overview"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/event-management",
+              "features/registration-inscriptions",
+              "features/evaluations-rubrics",
+              "features/scheduling-spaces",
+              "features/reports-certificates"
+            ]
+          },
+          {
+            "group": "Role Guides",
+            "pages": [
+              "roles/administrator",
+              "roles/coordinator",
+              "roles/evaluator",
+              "roles/speaker",
+              "roles/participant"
+            ]
+          },
+          {
+            "group": "Deployment & Configuration",
+            "pages": [
+              "deployment/installation",
+              "deployment/configuration",
+              "deployment/production"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Data Models",
+            "pages": [
+              "reference/models-overview",
+              "reference/user-model",
+              "reference/event-models",
+              "reference/evaluation-models",
+              "reference/participation-models"
+            ]
+          },
+          {
+            "group": "URL Reference",
+            "pages": [
+              "reference/urls-administrator",
+              "reference/urls-coordinator",
+              "reference/urls-evaluator",
+              "reference/urls-speaker-participant"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Role-based access control with five distinct roles: Administrator, Coordinator, Evaluator, Speaker, and Participant",
+    "End-to-end event lifecycle management (Draft → Published → Closed)",
+    "Evaluation rubrics with criteria scoring and conflict-free evaluator assignment",
+    "Speaker submission workflow with document validation states (CV, biography, slides)",
+    "Participant project registration with QR access passes and certificate generation",
+    "Event schedule management with space/venue conflict detection",
+    "Audit logging for all authentication and data-change events",
+    "Report generation in PDF and XLSX formats",
+    "Public ranking dashboard showing real-time evaluation results per event"
+  ],
+  "publicApiSurface": [
+    "GET / — Public ranking dashboard (home.views.index)",
+    "GET /ranking/data/ — JSON ranking data endpoint (home.views.ranking_data)",
+    "POST /login/ — User authentication (principal.views.login_view)",
+    "POST /registrar/ — New user registration (principal.views.registrar_view)",
+    "POST /recuperar/ — Account recovery request (principal.views.recuperar_cuenta_view)",
+    "GET/POST /set-password/<uidb64>/<token>/ — Password setup from admin invite",
+    "GET /administrador/ — Administrator dashboard",
+    "GET /administrador/usuarios/ — User management",
+    "GET /administrador/eventos/ — Event listing",
+    "GET /administrador/auditoria/ — Audit log viewer",
+    "GET /coordinador/ — Coordinator dashboard",
+    "GET /coordinador/gestion/ — Active event management",
+    "GET /coordinador/cronograma/ — Schedule management",
+    "GET /coordinador/inscripciones/ — Inscription management",
+    "GET /coordinador/evaluadores/ — Evaluator assignment",
+    "GET /coordinador/espacios/ — Venue/space management",
+    "GET /coordinador/rubricas/ — Rubric management",
+    "GET /coordinador/reportes/ — Report generation",
+    "GET /evaluador/ — Evaluator dashboard",
+    "GET /evaluador/proyectos/ — Assigned projects list",
+    "GET /evaluador/formulario/<id>/ — Evaluation submission form",
+    "GET /ponente/ — Speaker panel",
+    "GET /ponente/participacion/ — Speaker participation management",
+    "GET /ponente/constancia/pdf/<id>/ — Speaker certificate PDF download",
+    "GET /participante/ — Participant panel",
+    "GET /participante/gestion/ — Project submission and management",
+    "GET /participante/pase/ — QR access pass",
+    "GET /participante/constancia/pdf/ — Participation certificate PDF download"
+  ]
+}

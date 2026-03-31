@@ -1,0 +1,358 @@
+---
+title: "Participation models"
+description: "Models for speaker ponencias and participant projects, including documents, scheduling, access passes, and certificates."
+---
+
+Participation data lives in two apps. The `ponente` app manages speaker profiles and ponencia submissions. The `participante` app manages participant profiles, project submissions, QR access passes, and participation certificates.
+
+---
+
+## PerfilPonente
+
+Extended speaker profile. Created as a `OneToOne` extension of `Usuario` so that speaker-specific data does not pollute the core user model.
+
+<ParamField path="usuario" type="OneToOneField → Usuario" required>
+  The speaker's user account. Cascades on user deletion.
+</ParamField>
+
+<ParamField path="institucion" type="string">
+  Institutional affiliation. Max 180 characters. Optional.
+</ParamField>
+
+<ParamField path="especialidad" type="string">
+  Area of expertise or specialization. Max 180 characters. Optional.
+</ParamField>
+
+<ParamField path="telefono" type="string">
+  Contact phone number. Max 30 characters. Optional.
+</ParamField>
+
+<ParamField path="bio" type="string">
+  Free-text biography. Optional.
+</ParamField>
+
+<ParamField path="avatar" type="file">
+  Profile photo. Accepts `jpg`, `jpeg`, `png`, `webp`. Stored under `ponente/perfil/avatar/user_<id>/`. Optional.
+</ParamField>
+
+<ParamField path="cv" type="file">
+  Curriculum vitae. PDF only, max 10 MB. Stored under `ponente/perfil/cv/user_<id>/`. Optional.
+</ParamField>
+
+---
+
+## Ponencia
+
+A speaker's submission to an event. Each speaker can submit at most one ponencia per event (`UniqueConstraint` on `evento` and `ponente`).
+
+### Core fields
+
+<ParamField path="evento" type="ForeignKey → Evento" required>
+  The event this ponencia is submitted to.
+</ParamField>
+
+<ParamField path="ponente" type="ForeignKey → Usuario" required>
+  The submitting speaker.
+</ParamField>
+
+<ParamField path="titulo" type="string" required>
+  Ponencia title. Max 240 characters.
+</ParamField>
+
+<ParamField path="tipo" type="string">
+  Presentation type (e.g., oral, poster). Max 120 characters. Optional.
+</ParamField>
+
+<ParamField path="area_tematica" type="string">
+  Thematic area or track. Max 160 characters. Optional.
+</ParamField>
+
+<ParamField path="resumen" type="string">
+  Abstract text. Optional.
+</ParamField>
+
+<ParamField path="autores" type="string">
+  Co-author list as free text. Optional.
+</ParamField>
+
+<ParamField path="estado" type="string" required>
+  Review state. Defaults to `REGISTRADA`.
+
+  | Value | Display label |
+  |---|---|
+  | `REGISTRADA` | Registrada |
+  | `EN_REVISION` | En revisión |
+  | `ACEPTADA` | Aceptada |
+  | `RECHAZADA` | Rechazada |
+</ParamField>
+
+### Document fields
+
+Each document field has a paired `_estado` field that tracks the coordinator's validation of that file.
+
+<ParamField path="archivo_resumen" type="file">
+  Extended abstract. PDF only, max 10 MB. Stored under `ponente/resumenes/`.
+</ParamField>
+
+<ParamField path="presentacion" type="file">
+  Presentation file. Accepts `pdf`, `ppt`, `pptx`, max 25 MB. Stored under `ponente/presentaciones/`.
+</ParamField>
+
+<ParamField path="cv_documento" type="file">
+  Speaker CV as a document. PDF only, max 10 MB. Stored under `ponente/cv/`.
+</ParamField>
+
+<ParamField path="cv_estado" type="string" required>
+  Validation state of `cv_documento`. Defaults to `PENDIENTE`.
+
+  | Value | Display label |
+  |---|---|
+  | `PENDIENTE` | Pendiente |
+  | `EN_REVISION` | En revisión |
+  | `VALIDADO` | Validado |
+</ParamField>
+
+<ParamField path="resena_biografica" type="file">
+  Biographical note as a PDF, max 10 MB. Stored under `ponente/resenas/`.
+</ParamField>
+
+<ParamField path="resena_estado" type="string" required>
+  Validation state of `resena_biografica`. Same choices as `cv_estado`. Defaults to `PENDIENTE`.
+</ParamField>
+
+<ParamField path="diapositivas_presentacion" type="file">
+  Final slide deck. Accepts `pdf`, `ppt`, `pptx`, max 25 MB. Stored under `ponente/diapositivas/`.
+</ParamField>
+
+<ParamField path="diapositivas_estado" type="string" required>
+  Validation state of `diapositivas_presentacion`. Same choices as `cv_estado`. Defaults to `PENDIENTE`.
+</ParamField>
+
+### Scheduling fields
+
+<ParamField path="fecha_programada" type="date">
+  Scheduled presentation date. Nullable.
+</ParamField>
+
+<ParamField path="hora_inicio" type="time">
+  Scheduled start time. Nullable.
+</ParamField>
+
+<ParamField path="hora_fin" type="time">
+  Scheduled end time. Nullable.
+</ParamField>
+
+<ParamField path="espacio_asignado" type="string">
+  Name of the assigned room or area. Max 180 characters. Optional.
+</ParamField>
+
+<ParamField path="estado_programacion" type="string" required>
+  Scheduling state. Defaults to `PENDIENTE`.
+
+  | Value | Display label |
+  |---|---|
+  | `PENDIENTE` | Pendiente |
+  | `CONFIRMADO` | Confirmado |
+  | `REPROGRAMADO` | Reprogramado |
+  | `CANCELADO` | Cancelado |
+</ParamField>
+
+### Certificate fields
+
+<ParamField path="constancia_habilitada" type="boolean" required>
+  When `True`, the speaker can download their certificate regardless of whether their presentation has concluded. Defaults to `False`.
+</ParamField>
+
+<ParamField path="folio_constancia" type="string">
+  Certificate folio number. Max 50 characters. Assigned when the certificate is generated. Optional.
+</ParamField>
+
+### Methods
+
+<ResponseField name="puede_editar()" type="boolean">
+  Returns `True` if the event is `PUBLICADO` and the ponencia is in `REGISTRADA` or `EN_REVISION` state.
+</ResponseField>
+
+<ResponseField name="porcentaje_documentacion()" type="integer">
+  Returns the percentage of the four tracked documents (`cv_documento`, `resena_biografica`, `diapositivas_presentacion`, `requerimientos_tecnicos`) that have been provided. Returns values from `0` to `100`.
+</ResponseField>
+
+<ResponseField name="tiene_horario_asignado()" type="boolean">
+  Returns `True` if all four scheduling fields (`fecha_programada`, `hora_inicio`, `hora_fin`, `espacio_asignado`) are set.
+</ResponseField>
+
+<ResponseField name="puede_generar_constancia()" type="boolean">
+  Returns `True` if the ponencia has a speaker, an event, a scheduled date, is not cancelled, is not rejected, and either `constancia_habilitada` is `True` or the presentation has already concluded.
+</ResponseField>
+
+---
+
+## PerfilParticipante
+
+Extended participant profile. A `OneToOne` extension of `Usuario`.
+
+<ParamField path="usuario" type="OneToOneField → Usuario" required>
+  The participant's user account. Cascades on user deletion.
+</ParamField>
+
+<ParamField path="telefono" type="string">
+  Contact phone number. Max 20 characters. Optional.
+</ParamField>
+
+<ParamField path="institucion" type="string">
+  Institutional affiliation. Max 180 characters. Optional.
+</ParamField>
+
+<ParamField path="biografia" type="string">
+  Free-text biography. Optional.
+</ParamField>
+
+<ParamField path="avatar" type="file">
+  Profile photo. `ImageField`. Stored under `participante/perfil/user_<id>/`. Optional.
+</ParamField>
+
+<ParamField path="cv" type="file">
+  Curriculum vitae. Accepts `pdf`, `doc`, `docx`, max 10 MB. Stored under `participante/cv/user_<id>/`. Optional.
+</ParamField>
+
+---
+
+## ProyectoParticipante
+
+A project submitted by a participant to an event. Each participant can submit at most one project per event (`UniqueConstraint` on `evento` and `participante`).
+
+### Core fields
+
+<ParamField path="evento" type="ForeignKey → Evento" required>
+  The event the project is submitted to.
+</ParamField>
+
+<ParamField path="participante" type="ForeignKey → Usuario" required>
+  The submitting participant.
+</ParamField>
+
+<ParamField path="nombre_proyecto" type="string" required>
+  Project name. Max 220 characters.
+</ParamField>
+
+<ParamField path="categoria" type="string" required>
+  Project category.
+
+  | Value | Display label |
+  |---|---|
+  | `TECNOLOGIA` | Tecnología |
+  | `INNOVACION` | Innovación |
+  | `INVESTIGACION` | Investigación |
+  | `SOCIAL` | Impacto social |
+  | `EMPRESARIAL` | Emprendimiento |
+</ParamField>
+
+<ParamField path="numero_integrantes" type="integer" required>
+  Number of team members. Must be at least 1. Defaults to `1`.
+</ParamField>
+
+<ParamField path="resumen" type="string">
+  Project abstract. Optional.
+</ParamField>
+
+<ParamField path="presentacion" type="file">
+  Project presentation. Accepts `pdf`, `ppt`, `pptx`, max 25 MB. Stored under `participante/presentaciones/`.
+</ParamField>
+
+<ParamField path="informe" type="file">
+  Project report. Accepts `pdf`, `doc`, `docx`, max 15 MB. Stored under `participante/informes/`.
+</ParamField>
+
+<ParamField path="estado" type="string" required>
+  Review state. Defaults to `REGISTRADO`.
+
+  | Value | Display label |
+  |---|---|
+  | `REGISTRADO` | Registrado |
+  | `EN_REVISION` | En revisión |
+  | `ACEPTADO` | Aceptado |
+  | `RECHAZADO` | Rechazado |
+</ParamField>
+
+<ParamField path="estado_programacion" type="string" required>
+  Scheduling state. Defaults to `PENDIENTE`.
+
+  | Value | Display label |
+  |---|---|
+  | `PENDIENTE` | Pendiente |
+  | `PROGRAMADO` | Programado |
+  | `FINALIZADO` | Finalizado |
+  | `CANCELADO` | Cancelado |
+</ParamField>
+
+### Methods
+
+<ResponseField name="tiene_programacion()" type="boolean">
+  Returns `True` if `fecha_programada`, `hora_inicio`, and `hora_fin` are all set.
+</ResponseField>
+
+<ResponseField name="porcentaje_documentacion()" type="integer">
+  Returns the percentage of three tracked items (`resumen`, `presentacion`, `informe`) that have been provided. Returns values from `0` to `100`.
+</ResponseField>
+
+<ResponseField name="puede_editar()" type="boolean">
+  Returns `True` if the project is in `REGISTRADO` or `EN_REVISION` state.
+</ResponseField>
+
+---
+
+## PaseAccesoParticipante
+
+A UUID-based QR access pass linked one-to-one with a `ProyectoParticipante`. Used to track entry scanning at the event.
+
+<ParamField path="proyecto" type="OneToOneField → ProyectoParticipante" required>
+  The project this pass belongs to.
+</ParamField>
+
+<ParamField path="token" type="UUID" required>
+  Unique, auto-generated UUID. Indexed. Used to construct the validation URL.
+</ParamField>
+
+<ParamField path="activo" type="boolean" required>
+  Whether the pass is currently active. Defaults to `True`.
+</ParamField>
+
+<ParamField path="total_escaneos" type="integer" required>
+  Running count of how many times the QR code has been scanned. Defaults to `0`.
+</ParamField>
+
+<ParamField path="ultimo_escaneo" type="datetime">
+  Timestamp of the most recent scan. Nullable — `null` means never scanned.
+</ParamField>
+
+### Methods
+
+<ResponseField name="registrar_escaneo()" type="None">
+  Increments `total_escaneos` by 1, sets `ultimo_escaneo` to the current time, and saves only those two fields plus `actualizado_en`.
+</ResponseField>
+
+<ResponseField name="regenerar_token()" type="None">
+  Replaces `token` with a new `uuid4` value and saves. Use this to invalidate previously printed QR codes.
+</ResponseField>
+
+---
+
+## ConstanciaParticipante
+
+A participation certificate issued to a project. Linked one-to-one with `ProyectoParticipante`.
+
+<ParamField path="proyecto" type="OneToOneField → ProyectoParticipante" required>
+  The project this certificate was issued for.
+</ParamField>
+
+<ParamField path="folio" type="string" required>
+  Unique certificate reference number. Auto-generated, not editable. Indexed. Format: `SIGEP-CP-YYYYMMDD-XXXXXXXX` where `XXXXXXXX` is 8 random uppercase hex characters.
+</ParamField>
+
+<ParamField path="emitida_en" type="datetime" required>
+  Timestamp of certificate issuance. Defaults to `timezone.now`.
+</ParamField>
+
+<Tip>
+  The folio format is generated by the `generar_folio_constancia()` module-level function. Because it encodes the date and a random suffix, folios are effectively unique without requiring a sequence counter.
+</Tip>

@@ -1,0 +1,31 @@
+---
+title: "Evaluator URL reference"
+description: All URL routes accessible to Evaluators in SIGEP.
+keywords: ["evaluator", "urls", "routes", "evaluador", "sigep"]
+---
+
+This page documents every HTTP route available to users with the Evaluator role in SIGEP. All routes are defined in `evaluador/urls.py` and are mounted under `/evaluador/`.
+
+<Info>
+  All routes on this page require an active session with the EVALUATOR role. Unauthenticated requests and requests from users without this role will be rejected.
+</Info>
+
+## Routes
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/evaluador/` | Evaluator dashboard. Displays a summary of assigned projects and upcoming evaluations. |
+| `GET` | `/evaluador/panel/` | Evaluator panel. Renders the same view as `/evaluador/` and exists as a named alias. |
+| `GET` | `/evaluador/proyectos/` | Lists all projects assigned to you for evaluation in the active event. |
+| `GET`, `POST` | `/evaluador/formulario/<proyecto_id>/` | Displays and submits the evaluation form for the project identified by `proyecto_id`. A `GET` request loads the form; a `POST` request submits the completed evaluation. |
+| `GET` | `/evaluador/horario/` | Displays your personal evaluation schedule for the active event. |
+| `GET` | `/evaluador/historial/` | Displays a history of evaluations you have submitted across all events. |
+| `GET` | `/evaluador/configuracion/` | Displays your profile and account settings. |
+
+<Note>
+  `/evaluador/` and `/evaluador/panel/` are served by the same `panel` view. The root path is registered under the name `dashboard` and the `/panel/` path is registered under the name `panel`.
+</Note>
+
+<Tip>
+  Use `/evaluador/proyectos/` to review pending assignments before navigating to `/evaluador/formulario/<proyecto_id>/` to submit an evaluation.
+</Tip>

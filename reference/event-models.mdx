@@ -1,0 +1,156 @@
+---
+title: "Event models"
+description: "Models for events, system configuration, and audit logging — defined in the administrador app."
+---
+
+The `administrador` app owns the three models that form the administrative backbone of SIGEP: `Evento`, `ConfiguracionSistema`, and `AuditoriaLog`. Every other app references `administrador.Evento` as a foreign key for anything event-scoped.
+
+---
+
+## Evento
+
+Represents a single academic event. All other scoped data — ponencias, projects, rubrics, spaces, and inscriptions — references an `Evento` via a foreign key.
+
+### Fields
+
+<ParamField path="titulo" type="string" required>
+  Event title. Max 200 characters.
+</ParamField>
+
+<ParamField path="descripcion" type="string" required>
+  Full event description. Stored as `TextField` with no length limit.
+</ParamField>
+
+<ParamField path="fecha" type="date" required>
+  Event date. Stored as `DateField`.
+</ParamField>
+
+<ParamField path="lugar" type="string" required>
+  Venue or location name. Max 150 characters.
+</ParamField>
+
+<ParamField path="cupo" type="integer" required>
+  Maximum attendance capacity. `PositiveIntegerField`. Defaults to `0` (unlimited / not yet set).
+</ParamField>
+
+<ParamField path="estado" type="string" required>
+  Publication state. Defaults to `BORRADOR`. See choices below.
+
+  | Value | Display label |
+  |---|---|
+  | `BORRADOR` | Borrador |
+  | `PUBLICADO` | Publicado |
+  | `CERRADO` | Cerrado |
+</ParamField>
+
+<ParamField path="creado_por" type="ForeignKey → Usuario">
+  The user who created the event. Nullable — set to `null` when the user is deleted (`SET_NULL`).
+</ParamField>
+
+<ParamField path="creado_en" type="datetime">
+  Set automatically on creation (`auto_now_add`).
+</ParamField>
+
+<ParamField path="actualizado_en" type="datetime">
+  Updated automatically on every save (`auto_now`).
+</ParamField>
+
+<Note>
+  Only events with `estado = PUBLICADO` are visible to speakers and participants. The `puede_editar()` method on `Ponencia` and `ProyectoParticipante` checks this value to gate document uploads.
+</Note>
+
+---
+
+## ConfiguracionSistema
+
+A simple key/value store for platform-wide settings. Use it to hold values that administrators need to change at runtime without a code deployment — for example, registration deadlines, feature flags, or external service URLs.
+
+### Fields
+
+<ParamField path="clave" type="string" required>
+  Unique setting key. Max 100 characters. Uniqueness is enforced at the database level.
+</ParamField>
+
+<ParamField path="valor" type="string" required>
+  Setting value. Max 255 characters. All values are stored as plain strings; cast in application code as needed.
+</ParamField>
+
+<ParamField path="actualizado_en" type="datetime">
+  Updated automatically on every save (`auto_now`).
+</ParamField>
+
+<ParamField path="actualizado_por" type="ForeignKey → Usuario">
+  The user who last changed this setting. Nullable — set to `null` when the user is deleted (`SET_NULL`).
+</ParamField>
+
+---
+
+## AuditoriaLog
+
+An append-only audit table. Every significant action in the platform — including all authentication events — writes a row here. Rows are never updated in place.
+
+### Fields
+
+<ParamField path="usuario" type="ForeignKey → Usuario">
+  The authenticated user who performed the action. Nullable — `null` for anonymous or failed-login events.
+</ParamField>
+
+<ParamField path="accion" type="string" required>
+  Human-readable action label. Max 255 characters. For auth events the format is `AUTENTICACION | LOGIN_EXITOSO`, `AUTENTICACION | LOGOUT`, or `AUTENTICACION | LOGIN_FALLIDO | usuario=<identifier>`.
+</ParamField>
+
+<ParamField path="modulo" type="string">
+  App or subsystem that generated the log entry. Max 80 characters. Indexed. Example: `AUTENTICACION`.
+</ParamField>
+
+<ParamField path="accion_tipo" type="string">
+  Short action type code. Max 80 characters. Indexed. Example: `LOGIN`, `LOGOUT`, `LOGIN_FALLIDO`.
+</ParamField>
+
+<ParamField path="entidad" type="string">
+  Name of the affected model or entity. Max 120 characters. Example: `Sesion`, `Evento`.
+</ParamField>
+
+<ParamField path="objeto_id" type="string">
+  Primary key of the affected object as a string. Max 60 characters. May be empty for non-object actions.
+</ParamField>
+
+<ParamField path="resultado" type="string" required>
+  Outcome of the action. Indexed. Defaults to `EXITOSO`.
+
+  | Value | Display label |
+  |---|---|
+  | `EXITOSO` | Exitoso |
+  | `FALLIDO` | Fallido |
+  | `ADVERTENCIA` | Advertencia |
+</ParamField>
+
+<ParamField path="detalles" type="object">
+  Arbitrary JSON payload with additional context. Defaults to an empty dict. For auth events, contains `path` and, for failed logins, `identidad`.
+</ParamField>
+
+<ParamField path="fecha" type="datetime">
+  Set automatically on creation (`auto_now_add`). Indexed descending.
+</ParamField>
+
+<ParamField path="ip_origen" type="string">
+  Client IP address. Respects the `X-Forwarded-For` header. Nullable.
+</ParamField>
+
+<ParamField path="user_agent" type="string">
+  Raw `User-Agent` string from the request. Truncated to 2000 characters for auth events. Nullable.
+</ParamField>
+
+### Automatic authentication logging
+
+You do not need to write audit entries for authentication events manually. The `administrador` app connects three Django signals at import time:
+
+| Signal | `accion_tipo` | `resultado` |
+|---|---|---|
+| `user_logged_in` | `LOGIN` | `EXITOSO` |
+| `user_logged_out` | `LOGOUT` | `EXITOSO` |
+| `user_login_failed` | `LOGIN_FALLIDO` | `FALLIDO` |
+
+<Warning>
+  Because `AuditoriaLog` rows are created inside signal handlers that swallow exceptions, a database error during logging will not surface to the user and will not roll back the authentication action. Monitor your database logs separately if audit completeness is critical.
+</Warning>

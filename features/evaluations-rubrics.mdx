@@ -1,0 +1,96 @@
+---
+title: "Evaluations and rubrics"
+description: "Configuring rubrics and submitting evaluations for projects and presentations."
+keywords: ["evaluation", "rubric", "rubrica", "evaluador", "criterio", "scoring", "asignacion"]
+---
+
+SIGEP's evaluation system lets coordinators define structured rubrics, assign evaluators to specific projects or presentations, and collect scored evaluations per criterion. The public ranking dashboard at `/` shows real-time aggregated scores.
+
+## Evaluation workflow
+
+<Steps>
+  <Step title="Create a rubric">
+    The coordinator creates a `Rubrica` at `/coordinador/rubricas/`. A rubric must be linked to either an `EvaluacionProyecto` (project) or a `Ponencia` — not both. It starts in the `BORRADOR` state.
+
+    Add `RubricaCriterio` items to the rubric to define the individual scoring dimensions. Each criterion has a `titulo`, an optional `descripcion`, a `puntaje_max` (must be greater than 0), and an `orden` that controls display sequence.
+
+    When the rubric is fully configured, change its `estado` to `ACTIVA` to make it available for evaluations.
+  </Step>
+  <Step title="Register an evaluable project">
+    The coordinator registers an `EvaluacionProyecto` at `/coordinador/evaluadores/`. This record defines the project slot with a `titulo`, `ponente` name, `inicio` and `fin` times, and a `lugar`. Start time must be earlier than end time.
+  </Step>
+  <Step title="Assign evaluators">
+    The coordinator assigns one or more evaluators to a project by creating `EvaluacionAsignacion` records at `/coordinador/evaluadores/gestionar/guardar/`. Each assignment links an evaluator user to an `EvaluacionProyecto`.
+
+    <Warning>
+      Evaluator assignments are conflict-checked. The system rejects any assignment where the evaluator already has a different evaluation scheduled with an overlapping time slot within the same event. If a conflict exists, the assignment is blocked and you must resolve the schedule overlap before saving.
+    </Warning>
+  </Step>
+  <Step title="Evaluators score the project">
+    Each evaluator opens their evaluation form at `/evaluador/formulario/<proyecto_id>/`. They score each `RubricaCriterio` with a value between 1 and 5, and optionally add an `observacion` per criterion. These per-criterion responses are stored as `EvaluacionRespuestaCriterio` records.
+
+    The evaluator can save the evaluation as a `BORRADOR` to continue later.
+  </Step>
+  <Step title="Submit the evaluation">
+    When scoring is complete, the evaluator changes the `EvaluacionEntrega` state from `BORRADOR` to `ENVIADA`. The `calificacion` field stores the overall score and `observaciones_generales` captures any top-level remarks.
+
+    Once submitted, scores appear on the public ranking dashboard at `/`.
+  </Step>
+</Steps>
+
+## Rubric model
+
+| Field | Type | Description |
+|---|---|---|
+| `titulo` | `CharField(220)` | Name of the rubric |
+| `estado` | `CharField` | `BORRADOR` — not yet active; `ACTIVA` — available for use |
+| `evento` | `ForeignKey(Evento)` | The event this rubric belongs to |
+| `proyecto` | `ForeignKey(EvaluacionProyecto)` | Linked evaluable project slot (optional) |
+| `ponencia` | `ForeignKey(Ponencia)` | Linked ponencia (optional) |
+
+A rubric must be linked to exactly one of `proyecto` or `ponencia`. The platform rejects a rubric linked to neither or both. Only one rubric per project and one per ponencia is allowed within an event.
+
+The `puntaje_maximo` property sums all `puntaje_max` values across the rubric's criteria.
+
+## Criterion model (RubricaCriterio)
+
+| Field | Type | Description |
+|---|---|---|
+| `titulo` | `CharField(180)` | Criterion name |
+| `descripcion` | `TextField` | Optional description or guidance for evaluators |
+| `puntaje_max` | `PositiveIntegerField` | Maximum points for this criterion (must be > 0) |
+| `orden` | `PositiveIntegerField` | Display order within the rubric |
+
+## Evaluation submission model (EvaluacionEntrega)
+
+| Field | Type | Description |
+|---|---|---|
+| `asignacion` | `OneToOneField(EvaluacionAsignacion)` | The assignment this submission belongs to |
+| `calificacion` | `DecimalField(3,1)` | Overall score |
+| `observaciones_generales` | `TextField` | Top-level evaluator remarks |
+| `estado` | `CharField` | `BORRADOR` — in progress; `ENVIADA` — submitted |
+| `fecha_envio` | `DateTimeField` | Timestamp when the evaluation was submitted |
+
+## Per-criterion response model (EvaluacionRespuestaCriterio)
+
+| Field | Type | Description |
+|---|---|---|
+| `entrega` | `ForeignKey(EvaluacionEntrega)` | The parent evaluation submission |
+| `criterio` | `ForeignKey(RubricaCriterio)` | The criterion being scored |
+| `valor` | `PositiveSmallIntegerField` | Score from 1 to 5 |
+| `observacion` | `TextField` | Optional per-criterion comment |
+
+Each `(entrega, criterio)` pair is unique — an evaluator scores each criterion exactly once per submission.
+
+## URL reference
+
+| Role | URL | Purpose |
+|---|---|---|
+| Coordinator | `/coordinador/rubricas/` | List and manage rubrics |
+| Coordinator | `/coordinador/rubricas/guardar/` | Create or update a rubric |
+| Coordinator | `/coordinador/rubricas/<pk>/eliminar/` | Delete a rubric |
+| Coordinator | `/coordinador/evaluadores/` | Manage evaluable projects and assignments |
+| Coordinator | `/coordinador/evaluadores/proyecto/guardar/` | Create an evaluable project slot |
+| Coordinator | `/coordinador/evaluadores/gestionar/guardar/` | Assign an evaluator to a project |
+| Evaluator | `/evaluador/formulario/<proyecto_id>/` | Submit an evaluation |
+| Public | `/` | Real-time ranking dashboard |

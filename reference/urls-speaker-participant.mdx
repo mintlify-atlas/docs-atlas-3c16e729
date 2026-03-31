@@ -1,0 +1,99 @@
+---
+title: "Speaker and participant URL reference"
+description: All URL routes for Speakers (ponentes) and Participants in SIGEP.
+keywords: ["speaker", "participant", "ponente", "participante", "urls", "routes", "sigep"]
+---
+
+This page documents every HTTP route available to users with the Speaker (Ponente) or Participant role in SIGEP. Speaker routes are defined in `ponente/urls.py` and mounted under `/ponente/`. Participant routes are defined in `participante/urls.py` and mounted under `/participante/`.
+
+<Info>
+  Each role has its own isolated route group. Speaker routes require the PONENTE role and participant routes require the PARTICIPANTE role. Requests from users without the matching role will be rejected.
+</Info>
+
+## Speaker routes
+
+<Tabs>
+  <Tab title="Panel and registration">
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/ponente/` | Speaker panel. Displays a summary of your current event participation. |
+| `GET` | `/ponente/panel/` | Speaker panel alias. Renders the same view as `/ponente/`. |
+| `GET`, `POST` | `/ponente/inscripcion/` | Event registration page. A `GET` request displays the registration form; a `POST` request submits it. |
+| `GET`, `POST` | `/ponente/participacion/` | Manage your participation and uploaded documents. A `GET` request displays current submissions; a `POST` request saves changes. |
+
+  </Tab>
+  <Tab title="Schedule and results">
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/ponente/horario/` | Displays your personal presentation schedule for the active event. |
+| `GET` | `/ponente/resultados/` | Displays your evaluation results for submitted presentations. |
+| `GET` | `/ponente/historial/` | Displays your full participation history across all events. |
+
+  </Tab>
+  <Tab title="Certificate and settings">
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/ponente/constancia/` | Certificate management page. Lists available certificates for your presentations. |
+| `GET` | `/ponente/constancia/pdf/<ponencia_id>/` | Downloads the participation certificate for the presentation identified by `ponencia_id` as a PDF file. |
+| `GET` | `/ponente/configuracion/` | Displays your profile and account settings. |
+
+  </Tab>
+</Tabs>
+
+<Note>
+  `/ponente/` and `/ponente/panel/` are served by the same `panel` view. The root path is registered under the name `dashboard` and `/ponente/panel/` is registered under the name `panel`.
+</Note>
+
+---
+
+## Participant routes
+
+<Tabs>
+  <Tab title="Panel and event selection">
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/participante/` | Participant panel. Displays a summary of your event enrollments and project status. |
+| `GET` | `/participante/panel/` | Participant panel alias. Renders the same view as `/participante/`. |
+| `GET` | `/participante/evento/elegir/` | Displays the list of available events so you can choose one to register for. |
+| `POST` | `/participante/evento/<pk>/eliminar/` | Removes your registration for the project identified by `pk`. |
+
+  </Tab>
+  <Tab title="Program and project management">
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/participante/programa/` | Displays the full event program, including the schedule and listed presentations. |
+| `GET`, `POST` | `/participante/gestion/` | Manages your project submission for the active event. A `GET` request loads the current submission; a `POST` request saves changes. |
+
+  </Tab>
+  <Tab title="Access pass">
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/participante/pase/` | Displays your QR code access pass for the active event. |
+| `GET` | `/participante/pase/validar/<token>/` | Validates the QR access pass identified by the UUID `token`. Used by staff to verify attendee access at the event entrance. |
+
+  </Tab>
+  <Tab title="Certificate and settings">
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/participante/constancia/` | Displays the certificate page for your event participation. |
+| `GET` | `/participante/constancia/previsualizar/` | Shows a preview of your participation certificate before downloading. |
+| `GET` | `/participante/constancia/pdf/` | Downloads your participation certificate as a PDF file. |
+| `GET` | `/participante/configuracion/` | Displays your profile and account settings. |
+
+  </Tab>
+</Tabs>
+
+<Note>
+  `/participante/` and `/participante/panel/` are served by the same `panel_participante` view. Both names (`panel_participante` and `panel`) resolve to the same page.
+</Note>
+
+<Warning>
+  The `/participante/evento/<pk>/eliminar/` route permanently removes your project registration. This action cannot be undone from the participant interface.
+</Warning>

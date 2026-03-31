@@ -1,0 +1,99 @@
+---
+title: "Coordinator URL reference"
+description: All URL routes accessible to Coordinators in SIGEP.
+keywords: ["coordinator", "urls", "routes", "coordinador", "sigep"]
+---
+
+This page documents every HTTP route available to users with the Coordinator role in SIGEP. All routes are defined in `coordinador/urls.py` and are mounted under `/coordinador/`.
+
+<Info>
+  All routes on this page require an active session with the COORDINATOR role. Unauthenticated requests and requests from users without this role will be rejected.
+</Info>
+
+## Dashboard
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/coordinador/` | Main coordinator dashboard. Displays a summary of the active event. |
+
+## Events
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/coordinador/eventos/` | Lists all events managed by the coordinator. |
+| `GET` | `/coordinador/evento/crear/` | Displays the form for creating a new event. |
+| `POST` | `/coordinador/evento/guardar/` | Saves a new or updated event. Accepts event form data in the request body. |
+| `GET` | `/coordinador/evento/seleccionar/` | Displays the event selection screen so you can set the active event. |
+| `GET` | `/coordinador/evento/<pk>/seleccionar/` | Directly selects the event identified by `pk` as the active event. |
+| `POST` | `/coordinador/evento/<pk>/estado/` | Changes the state of the event identified by `pk`. Accepts the new state in the request body. |
+| `POST` | `/coordinador/evento/<pk>/eliminar/` | Deletes the event identified by `pk`. |
+
+## Active event management
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/coordinador/gestion/` | Displays the management view for the currently active event. |
+
+## Schedule
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/coordinador/cronograma/` | Displays the schedule for the active event. |
+| `POST` | `/coordinador/cronograma/guardar/` | Saves a new or updated schedule activity. Accepts activity data in the request body. |
+| `POST` | `/coordinador/cronograma/<pk>/eliminar/` | Deletes the schedule activity identified by `pk`. |
+
+## Inscriptions
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/coordinador/inscripciones/` | Lists all inscriptions for the active event. |
+| `POST` | `/coordinador/inscripciones/guardar/` | Saves a new or updated inscription. Accepts inscription data in the request body. |
+| `POST` | `/coordinador/inscripciones/<user_id>/eliminar/` | Removes the inscription belonging to the user identified by `user_id`. |
+| `GET` | `/coordinador/inscripciones/exportar/csv/` | Downloads the inscription list for the active event as a CSV file. |
+
+## Evaluators
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/coordinador/evaluadores/` | Displays the evaluator management page for the active event. |
+| `POST` | `/coordinador/evaluadores/proyecto/guardar/` | Saves a new or updated evaluation project. Accepts project data in the request body. |
+| `POST` | `/coordinador/evaluadores/proyecto/<pk>/eliminar/` | Deletes the evaluation project identified by `pk`. |
+| `POST` | `/coordinador/evaluadores/gestionar/guardar/` | Saves an evaluator assignment. Accepts assignment data in the request body. |
+
+## Spaces
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/coordinador/espacios/` | Lists all spaces configured for the active event. |
+| `POST` | `/coordinador/espacios/guardar/` | Saves a new or updated space. Accepts space data in the request body. |
+| `POST` | `/coordinador/espacios/<pk>/eliminar/` | Deletes the space identified by `pk`. |
+
+## Reports
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/coordinador/reportes/` | Lists all reports associated with the active event. |
+| `POST` | `/coordinador/reportes/generar/` | Generates a new report. Accepts report parameters in the request body. |
+| `GET` | `/coordinador/reportes/<pk>/descargar/` | Downloads the report identified by `pk` as a file. |
+| `POST` | `/coordinador/reportes/<pk>/editar/` | Updates the report identified by `pk`. Accepts updated fields in the request body. |
+| `POST` | `/coordinador/reportes/<pk>/eliminar/` | Deletes the report identified by `pk`. |
+
+## Rubrics
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/coordinador/rubricas/` | Lists all rubrics available for the active event. |
+| `POST` | `/coordinador/rubricas/guardar/` | Saves a new or updated rubric. Accepts rubric data in the request body. |
+| `GET` | `/coordinador/rubricas/adjuntos/<pk>/descargar/` | Downloads the rubric attachment identified by `pk`. |
+| `POST` | `/coordinador/rubricas/adjuntos/<pk>/eliminar/` | Deletes the rubric attachment identified by `pk`. |
+| `POST` | `/coordinador/rubricas/<pk>/eliminar/` | Deletes the rubric identified by `pk`. |
+
+## Configuration
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/coordinador/configuracion/` | Displays coordinator-specific configuration settings. |
+
+<Warning>
+  Deletion routes (`/eliminar/`) are irreversible. Always confirm the target resource before submitting a delete request.
+</Warning>

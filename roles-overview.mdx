@@ -1,0 +1,67 @@
+---
+title: "Roles overview"
+description: "The five roles in SIGEP, their permission boundaries, and where to find the detailed guide for each."
+---
+
+Every user in SIGEP has exactly one role. The role controls which dashboard the user sees after login and what actions they can perform. The Administrator is the only role that can change another user's role.
+
+## Role codes
+
+The `rol` field on the `Usuario` model uses the following short codes:
+
+| Display name | Code | Default |
+|---|---|---|
+| Administrator | `ADMIN` | — |
+| Coordinator | `COOR` | — |
+| Evaluator/Judge | `EVAL` | — |
+| Speaker | `PON` | — |
+| Participant | `PART` | Yes (new registrations) |
+
+New user accounts default to `PART` (Participant) unless a different role is selected at registration and — for `ADMIN` and `COOR` — validated with the corresponding access code.
+
+<Note>
+The Administrator assigns roles to existing users and can invite new users by email. Invited users receive a one-time set-password link at `/set-password/<uidb64>/<token>/` to activate their account with the assigned role already set.
+</Note>
+
+## Role dashboards
+
+<CardGroup cols={2}>
+  <Card title="Administrator" icon="shield" href="/roles/administrator">
+    Manages users, system configuration, events, and the full audit log.
+  </Card>
+  <Card title="Coordinator" icon="sliders" href="/roles/coordinator">
+    Configures, publishes, and closes events; manages schedule, rubrics, and venue spaces.
+  </Card>
+  <Card title="Evaluator" icon="clipboard-check" href="/roles/evaluator">
+    Reviews assigned projects and presentations using configurable rubrics.
+  </Card>
+  <Card title="Speaker" icon="microphone" href="/roles/speaker">
+    Submits presentation materials, CV, and biographical information.
+  </Card>
+  <Card title="Participant" icon="user" href="/roles/participant">
+    Registers projects, tracks evaluation results, and downloads certificates.
+  </Card>
+</CardGroup>
+
+## Permission boundaries
+
+The table below summarizes what each role can and cannot do.
+
+| Action | ADMIN | COOR | EVAL | PON | PART |
+|--------|:-----:|:----:|:----:|:---:|:----:|
+| Create and delete events | Yes | — | — | — | — |
+| Assign roles to users | Yes | — | — | — | — |
+| Invite users by email | Yes | — | — | — | — |
+| View audit log | Yes | — | — | — | — |
+| Manage system configuration | Yes | — | — | — | — |
+| Publish and close events | — | Yes | — | — | — |
+| Configure schedule and venues | — | Yes | — | — | — |
+| Set up rubrics and evaluator assignments | — | Yes | — | — | — |
+| Evaluate assigned projects | — | — | Yes | — | — |
+| Submit presentation materials | — | — | — | Yes | — |
+| Register projects | — | — | — | — | Yes |
+| Download participation certificate | — | — | — | Yes | Yes |
+
+<Warning>
+A user with the `PART` role who navigates to `/administrador/` or `/coordinador/` is redirected back to their own dashboard. Role-based access is enforced server-side on every request.
+</Warning>

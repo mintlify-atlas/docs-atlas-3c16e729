@@ -1,0 +1,53 @@
+---
+title: "Evaluator guide"
+description: "How to use the Evaluator dashboard in SIGEP"
+sidebarTitle: "Evaluator"
+icon: "clipboard-check"
+---
+
+The Evaluator (role code `EVAL`) reviews assigned projects and submits rubric-based evaluations through the evaluator panel at `/evaluador/`.
+
+## Dashboard
+
+After logging in you are redirected to `/evaluador/`. The dashboard shows a summary of your assigned projects, pending evaluations, and any evaluations you have already submitted.
+
+## Viewing assigned projects
+
+Go to `/evaluador/proyectos/` to see every project the coordinator has assigned to you for the current event. Each card shows the project title, speaker name, scheduled time slot, and the current evaluation status.
+
+## Submitting an evaluation
+
+<Steps>
+  <Step title="Open the evaluation form">
+    From the project list at `/evaluador/proyectos/`, click **Evaluar** on the project you want to score. This opens the evaluation form at `/evaluador/formulario/<proyecto_id>/`.
+  </Step>
+  <Step title="Score each criterion">
+    The rubric criteria are listed individually. Enter a score from **1 to 5** (`valor`) for each criterion. Each criterion may include a description to guide your scoring.
+  </Step>
+  <Step title="Add general observations">
+    Use the observations field to write any overall comments about the project. This field is optional but recommended.
+  </Step>
+  <Step title="Submit the evaluation">
+    Click **Enviar evaluación**. The evaluation's `estado` changes from `BORRADOR` to `ENVIADA` and the record is locked.
+  </Step>
+</Steps>
+
+<Warning>
+  Once you submit an evaluation (`ENVIADA`), it cannot be edited or withdrawn. Review all criterion scores and your observations carefully before clicking **Enviar evaluación**.
+</Warning>
+
+## Schedule
+
+View your personal schedule at `/evaluador/horario/`. This page lists the time slots for all projects assigned to you in chronological order, including the assigned space.
+
+<Note>
+  SIGEP prevents the coordinator from assigning you to two projects with overlapping time slots. If you notice a scheduling conflict, contact your coordinator.
+</Note>
+
+## Evaluation history
+
+Go to `/evaluador/historial/` to see a full record of evaluations you have submitted across all events.
+
+## Settings
+
+Update your profile and account preferences at `/evaluador/configuracion/`.

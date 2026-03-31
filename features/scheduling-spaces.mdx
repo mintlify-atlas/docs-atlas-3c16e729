@@ -1,0 +1,95 @@
+---
+title: "Scheduling and spaces"
+description: "Managing event schedules and venue space assignments for projects and presentations."
+keywords: ["schedule", "cronograma", "space", "espacio", "venue", "auditorio", "sala", "laboratorio", "actividad"]
+---
+
+SIGEP provides two related but independent tools for event logistics: a schedule of activities (`ActividadCronograma`) and a registry of physical spaces (`Espacio`). Both are scoped to an event and managed by the coordinator.
+
+## Schedule activities
+
+The `ActividadCronograma` model represents a time-blocked item on the event's agenda. Activities are ordered by start time.
+
+### Activity fields
+
+| Field | Type | Description |
+|---|---|---|
+| `titulo` | `CharField(180)` | Name of the activity |
+| `inicio` | `TimeField` | Start time |
+| `fin` | `TimeField` | End time (must be after `inicio`) |
+| `responsable` | `CharField(180)` | Name of the person responsible for the activity |
+| `evento` | `ForeignKey(Evento)` | The event this activity belongs to |
+
+The system validates that `fin > inicio`. Saving an activity with an end time equal to or before the start time raises a validation error.
+
+### Managing the schedule
+
+Coordinators manage schedule activities at `/coordinador/cronograma/`. You can create or update activities at `/coordinador/cronograma/guardar/` and delete them at `/coordinador/cronograma/<pk>/eliminar/`.
+
+## Spaces
+
+The `Espacio` model represents a physical venue area assigned to a specific project or ponencia within an event. Each space record captures the location, type, capacity, and the time window during which it is in use.
+
+### Space fields
+
+| Field | Type | Description |
+|---|---|---|
+| `nombre` | `CharField(180)` | Space name (e.g., "Auditorio A") |
+| `tipo` | `CharField` | Space type: `AUDITORIO`, `SALA`, `LABORATORIO`, or `OTRO` |
+| `capacidad` | `PositiveIntegerField` | Maximum number of attendees |
+| `ubicacion` | `CharField(220)` | Physical location or room description |
+| `inicio` | `TimeField` | Start time of usage (required) |
+| `fin` | `TimeField` | End time of usage (required, must be after `inicio`) |
+| `estado` | `CharField` | Availability state: `DISPONIBLE`, `OCUPADO`, or `MANTENIMIENTO` |
+| `tags` | `CharField(300)` | Optional free-text tags for filtering |
+| `evento` | `ForeignKey(Evento)` | The event this space belongs to |
+| `proyecto` | `ForeignKey(EvaluacionProyecto)` | Linked project (optional) |
+| `ponencia` | `ForeignKey(Ponencia)` | Linked ponencia (optional) |
+
+### Space types
+
+| Value | Display |
+|---|---|
+| `AUDITORIO` | Auditorio |
+| `SALA` | Sala |
+| `LABORATORIO` | Laboratorio |
+| `OTRO` | Otro |
+
+### Space states
+
+| Value | Display |
+|---|---|
+| `DISPONIBLE` | Available for assignment |
+| `OCUPADO` | Currently assigned and in use |
+| `MANTENIMIENTO` | Unavailable due to maintenance |
+
+## Assignment rules and conflict detection
+
+<Info>
+  Every space record must be linked to **either** a project (`proyecto`) **or** a ponencia (`ponencia`), but not both and not neither. The system enforces this with a validation error if both or neither foreign keys are set.
+
+  Additionally, two conflict rules apply when saving a space:
+
+  1. **Time overlap:** A space with the same `nombre` (case-insensitive) cannot be assigned to two different projects or ponencias with overlapping time windows within the same event. If the new record's `inicio`–`fin` window overlaps with any existing record of the same name, the save is rejected.
+  2. **Duplicate assignment:** Each project and each ponencia can only have one space record. If you need to change the space for a project or ponencia, edit the existing record rather than creating a new one.
+</Info>
+
+The `tipo_objetivo` and `objetivo_titulo` properties on the `Espacio` model expose whether a space is assigned to a project or ponencia and the corresponding title, which is useful for rendering space lists.
+
+## Managing spaces
+
+Coordinators manage all spaces for the active event at `/coordinador/espacios/`. From there you can:
+
+- Create or update a space assignment at `/coordinador/espacios/guardar/`.
+- Delete a space record at `/coordinador/espacios/<pk>/eliminar/`.
+
+## URL reference
+
+| Role | URL | Purpose |
+|---|---|---|
+| Coordinator | `/coordinador/cronograma/` | View and manage the event schedule |
+| Coordinator | `/coordinador/cronograma/guardar/` | Create or update a schedule activity |
+| Coordinator | `/coordinador/cronograma/<pk>/eliminar/` | Delete a schedule activity |
+| Coordinator | `/coordinador/espacios/` | View and manage venue spaces |
+| Coordinator | `/coordinador/espacios/guardar/` | Create or update a space assignment |
+| Coordinator | `/coordinador/espacios/<pk>/eliminar/` | Delete a space assignment |

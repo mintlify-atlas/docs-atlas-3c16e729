@@ -1,0 +1,53 @@
+---
+title: "Introduction"
+description: "What SIGEP is, the problems it solves, and how its five-role model organizes every academic event from draft to close."
+---
+
+SIGEP — **Sistema de Gestión de Eventos y Ponencias** — is a Django-based SaaS platform for managing academic events end to end. It covers event creation, participant and speaker registration, rubric-based evaluations, schedule and venue management, and certificate generation, all within a single coordinated system.
+
+## What problem SIGEP solves
+
+Organizing a conference, symposium, or science fair involves a chain of people who each own a different piece of the process: someone who creates the event, someone who configures it, experts who judge the work, the people who present, and those who attend. Without a shared platform these groups rely on email threads, spreadsheets, and manual coordination that breaks down at scale.
+
+SIGEP replaces that ad-hoc workflow with five purpose-built dashboards — one for each role — that share a single database and enforce clear permission boundaries throughout the event lifecycle.
+
+## The five-role model
+
+Every user in SIGEP has exactly one role, stored in the `rol` field of the central `Usuario` model.
+
+| Role | Code | Responsibility |
+|------|------|---------------|
+| Administrator | `ADMIN` | Manages users, system configuration, and audit logs |
+| Coordinator | `COOR` | Configures, publishes, and closes events |
+| Evaluator | `EVAL` | Reviews assigned projects and presentations using rubrics |
+| Speaker | `PON` | Submits presentation materials and biographical information |
+| Participant | `PART` | Registers projects and tracks evaluation results |
+
+<Note>
+The Administrator assigns roles and can invite users by email. Invited users receive a set-password link at `/set-password/<uidb64>/<token>/` to activate their account.
+</Note>
+
+## The event lifecycle
+
+Every event in SIGEP moves through three states:
+
+**BORRADOR (Draft)** — The event is created by an Administrator. It is not yet visible to participants or speakers. The Coordinator uses this phase to configure the schedule, registration rules, rubrics, and venue spaces.
+
+**PUBLICADO (Published)** — The Coordinator publishes the event. Registration opens for participants and speakers. Evaluators can be assigned to projects.
+
+**CERRADO (Closed)** — The Coordinator closes the event. Registrations are locked. Participants and speakers can download PDF certificates of participation from their dashboards.
+
+```text
+BORRADOR → PUBLICADO → CERRADO
+```
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Create your first event and invite users in a few steps.
+  </Card>
+  <Card title="Roles overview" icon="users" href="/roles-overview">
+    See the full breakdown of what each role can and cannot do.
+  </Card>
+</CardGroup>

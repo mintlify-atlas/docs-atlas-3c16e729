@@ -1,0 +1,123 @@
+---
+title: "Reports and certificates"
+description: "Generating reports and issuing participation certificates for participants and speakers."
+keywords: ["report", "reporte", "certificate", "constancia", "folio", "PDF", "XLSX", "auditoria"]
+---
+
+SIGEP provides two separate output mechanisms for event data: **reports** for coordinators and administrators to analyze event activity, and **certificates** for participants and speakers to document their involvement.
+
+<CardGroup cols={2}>
+  <Card title="Reports" icon="chart-bar">
+    Generate PDF or XLSX summaries of inscriptions, evaluations, attendance, and general event data. Available in real-time or historical modes.
+  </Card>
+  <Card title="Certificates" icon="award">
+    Issue uniquely identified participation certificates to participants (PDF download) and speakers (PDF download), each with a traceable folio number.
+  </Card>
+</CardGroup>
+
+## Reports
+
+The `Reporte` model stores metadata and the generated file for each report request. Reports are scoped to an event.
+
+### Report fields
+
+| Field | Type | Description |
+|---|---|---|
+| `nombre` | `CharField(220)` | Report name |
+| `categoria` | `CharField` | Data category (see below) |
+| `formato` | `CharField` | Output format: `PDF` or `XLSX` |
+| `modo` | `CharField` | Generation mode: `TIEMPO_REAL` or `HISTORIAL` |
+| `estado` | `CharField` | Report lifecycle state: `LISTO` or `ARCHIVADO` |
+| `generado_en` | `DateTimeField` | Timestamp when the report was generated |
+| `archivo` | `FileField` | The generated report file |
+| `evento` | `ForeignKey(Evento)` | The event the report belongs to |
+| `proyecto` | `ForeignKey(EvaluacionProyecto)` | Optional link to a specific project |
+| `creado_por` | `ForeignKey(User)` | The user who generated the report |
+
+### Categories
+
+| Value | Covers |
+|---|---|
+| `TODOS` | All data categories combined |
+| `INSCRIPCIONES` | Inscription and registration data |
+| `EVALUACIONES` | Evaluation scores and rubric results |
+| `ASISTENCIA` | Attendance records |
+| `GENERAL` | General event summary |
+
+### Modes
+
+| Value | Behavior |
+|---|---|
+| `TIEMPO_REAL` | Generated from current live data |
+| `HISTORIAL` | Generated from a historical snapshot |
+
+### States
+
+| Value | Meaning |
+|---|---|
+| `LISTO` | Report is generated and available for download |
+| `ARCHIVADO` | Report has been archived |
+
+### Generating and downloading reports
+
+Coordinators generate reports at `/coordinador/reportes/generar/` and download them at `/coordinador/reportes/<pk>/descargar/`. Reports can also be edited at `/coordinador/reportes/<pk>/editar/` and deleted at `/coordinador/reportes/<pk>/eliminar/`.
+
+Administrators can export the full audit log as a CSV file at `/administrador/auditoria/export/`. This covers all platform actions recorded in `AuditoriaLog`, including login events, entity changes, and system actions, each tagged with `modulo`, `accion_tipo`, `resultado`, `ip_origen`, and a timestamp.
+
+---
+
+## Certificates
+
+SIGEP issues two types of certificates, one for participants and one for speakers. Each certificate has a unique folio for verification.
+
+### Participant certificates
+
+Participant certificates are stored as `ConstanciaParticipante` records, one per `ProyectoParticipante`.
+
+| Field | Type | Description |
+|---|---|---|
+| `proyecto` | `OneToOneField(ProyectoParticipante)` | The participant project this certificate belongs to |
+| `folio` | `CharField(40)` | Unique certificate identifier (auto-generated, immutable) |
+| `emitida_en` | `DateTimeField` | Timestamp when the certificate was issued |
+
+**Folio format:** `SIGEP-CP-YYYYMMDD-XXXXXXXX`, where `YYYYMMDD` is the date and `XXXXXXXX` is a random 8-character uppercase hex string. Example: `SIGEP-CP-20260331-A3F92C1B`.
+
+Participants download their certificate as a PDF at `/participante/constancia/pdf/`.
+
+### Speaker certificates
+
+Speaker certificates are controlled directly on the `Ponencia` model via two fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `constancia_habilitada` | `BooleanField` | Set by the coordinator to explicitly enable certificate generation |
+| `folio_constancia` | `CharField(50)` | Unique folio for the speaker's certificate |
+| `constancia_generada_en` | `DateTimeField` | Timestamp when the certificate was generated |
+
+Speakers download their certificate as a PDF at `/ponente/constancia/pdf/<ponencia_id>/`.
+
+**Certificate generation conditions (`puede_generar_constancia()`):**
+
+A speaker certificate can only be generated when all of the following are true:
+
+1. The ponencia has a linked `ponente` and `evento`.
+2. A `fecha_programada` is set on the ponencia.
+3. The `estado_programacion` is not `CANCELADO`.
+4. The ponencia `estado` is not `RECHAZADA`.
+5. Either `constancia_habilitada` is `True` (coordinator explicitly enabled it), **or** `participacion_finalizada()` returns `True` (the scheduled date and end time have passed).
+
+If any condition is not met, the certificate cannot be generated.
+
+## URL reference
+
+| Role | URL | Purpose |
+|---|---|---|
+| Coordinator | `/coordinador/reportes/` | List all reports for the event |
+| Coordinator | `/coordinador/reportes/generar/` | Generate a new report |
+| Coordinator | `/coordinador/reportes/<pk>/descargar/` | Download a generated report file |
+| Coordinator | `/coordinador/reportes/<pk>/editar/` | Edit report metadata |
+| Coordinator | `/coordinador/reportes/<pk>/eliminar/` | Delete a report |
+| Administrator | `/administrador/auditoria/` | View the audit log |
+| Administrator | `/administrador/auditoria/export/` | Export the full audit log as CSV |
+| Participant | `/participante/constancia/pdf/` | Download participant certificate as PDF |
+| Speaker | `/ponente/constancia/pdf/<ponencia_id>/` | Download speaker certificate as PDF |

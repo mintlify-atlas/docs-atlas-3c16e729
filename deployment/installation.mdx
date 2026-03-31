@@ -1,0 +1,112 @@
+---
+title: "Installation"
+description: "Set up SIGEP on your machine for development"
+---
+
+<Info>
+  **Prerequisites**
+
+  - Python 3.x
+  - pip
+  - virtualenv or the `venv` module (included with Python 3.3+)
+</Info>
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the SIGEP repository to your local machine:
+
+    ```bash
+    git clone <repository-url>
+    cd SIGEP
+    ```
+  </Step>
+
+  <Step title="Create and activate a virtual environment">
+    Create a virtual environment in the project root:
+
+    ```bash
+    python -m venv venv
+    ```
+
+    Then activate it:
+
+    <Tabs>
+      <Tab title="macOS / Linux">
+        ```bash
+        source venv/bin/activate
+        ```
+      </Tab>
+      <Tab title="Windows (PowerShell)">
+        ```powershell
+        venv\Scripts\Activate.ps1
+        ```
+      </Tab>
+      <Tab title="Windows (Command Prompt)">
+        ```bat
+        venv\Scripts\activate.bat
+        ```
+      </Tab>
+    </Tabs>
+
+    <Note>
+      On Windows, the project includes a helper script `activar_venv.bat` in the repository root. Double-click it or run it from the terminal to activate the virtual environment automatically.
+    </Note>
+  </Step>
+
+  <Step title="Install dependencies">
+    The project's virtual environment (`venv/`) contains all required packages including Django 6.0.2, Pillow, ReportLab, openpyxl, qrcode, and pyhanko. Install the core dependencies into your own environment:
+
+    ```bash
+    pip install django==6.0.2 pillow reportlab openpyxl qrcode pyhanko requests
+    ```
+
+    <Tip>
+      If you are running the included `venv/` directly (Windows only — the venv is bundled for Windows), activate it with `activar_venv.bat` instead of creating a new one. On macOS or Linux, create a fresh virtual environment and install the packages listed above.
+    </Tip>
+  </Step>
+
+  <Step title="Apply database migrations">
+    SIGEP uses SQLite by default (`db.sqlite3`). Run migrations to create the database schema:
+
+    ```bash
+    python manage.py migrate
+    ```
+  </Step>
+
+  <Step title="Create a superuser">
+    Create an administrator account to access the Django admin panel and SIGEP's admin area:
+
+    ```bash
+    python manage.py createsuperuser
+    ```
+
+    Follow the prompts to set a username, email address, and password.
+  </Step>
+
+  <Step title="Run the development server">
+    Start the built-in development server:
+
+    ```bash
+    python manage.py runserver
+    ```
+
+    Static files are served from `static/` and uploaded media files are served from `media/` automatically during development.
+  </Step>
+
+  <Step title="Open SIGEP in your browser">
+    Navigate to [http://127.0.0.1:8000/](http://127.0.0.1:8000/) to verify the application is running.
+
+    The Django admin panel is available at [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/).
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/deployment/configuration">
+    Learn which settings to update for your environment.
+  </Card>
+  <Card title="Production deployment" icon="server" href="/deployment/production">
+    Deploy SIGEP to a production server.
+  </Card>
+</CardGroup>

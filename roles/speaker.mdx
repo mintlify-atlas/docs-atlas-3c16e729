@@ -1,0 +1,74 @@
+---
+title: "Speaker guide"
+description: "How to use the Speaker (Ponente) dashboard in SIGEP"
+sidebarTitle: "Speaker"
+icon: "microphone"
+---
+
+The Speaker (role code `PON`, referred to as *ponente* in the system) submits a presentation proposal (*ponencia*) to an event, uploads supporting documents, and collects a participation certificate once the event is complete. Your panel is at `/ponente/`.
+
+## Registration-to-certificate workflow
+
+<Steps>
+  <Step title="Register for an event and submit your ponencia">
+    Go to `/ponente/inscripcion/`. Select an open event and fill in your ponencia details: title, topic area, abstract, and author list. After submitting, your ponencia state is `REGISTRADA`.
+  </Step>
+  <Step title="Upload your participation documents">
+    Go to `/ponente/participacion/` to manage your documents and complete your profile. Upload the following materials:
+
+    | Document | Formats | Max size |
+    |---|---|---|
+    | CV (`cv_documento`) | PDF | 10 MB |
+    | Biographical summary (`resena_biografica`) | PDF | 10 MB |
+    | Slides (`diapositivas_presentacion`) | PDF, PPT, PPTX | 25 MB |
+
+    You can also enter your **technical requirements** (`requerimientos_tecnicos`) as free text. The `porcentaje_documentacion()` method calculates your completion percentage out of these four items (CV, biographical summary, slides, technical requirements), shown as 0–100% on the participation page.
+  </Step>
+  <Step title="Monitor your ponencia state">
+    Your ponencia moves through the following states:
+
+    | State | Meaning |
+    |---|---|
+    | `REGISTRADA` | Submitted, awaiting coordinator review |
+    | `EN_REVISION` | Under review by the coordinator |
+    | `ACEPTADA` | Accepted and scheduled |
+    | `RECHAZADA` | Not accepted for this event |
+
+    Check the status at any time on the participation page.
+  </Step>
+  <Step title="Check your schedule">
+    Once your ponencia is accepted and scheduled, view your assigned date, time slot, and venue space at `/ponente/horario/`.
+  </Step>
+  <Step title="View evaluation results">
+    After evaluators submit their scores, your results are available at `/ponente/resultados/`.
+  </Step>
+  <Step title="Download your participation certificate">
+    Go to `/ponente/constancia/` to generate your certificate. Once available, download the PDF from `/ponente/constancia/pdf/<ponencia_id>/`.
+
+    Your certificate is available when either of these conditions is met:
+    - The coordinator has manually enabled it (`constancia_habilitada = True`), or
+    - Your scheduled time slot has passed and your ponencia was not cancelled (`participacion_finalizada()` returns `True`).
+  </Step>
+</Steps>
+
+<Tip>
+  Check the document validation states on the participation page at `/ponente/participacion/`. Each document has its own state — `PENDIENTE`, `EN_REVISION`, or `VALIDADO` — and your ponencia cannot be fully processed until all required documents are validated by the coordinator.
+</Tip>
+
+## Document states
+
+Each uploaded document (`cv_documento`, `resena_biografica`, `diapositivas_presentacion`) goes through the same validation lifecycle:
+
+| State | Meaning |
+|---|---|
+| `PENDIENTE` | Uploaded but not yet reviewed |
+| `EN_REVISION` | The coordinator is reviewing the document |
+| `VALIDADO` | Accepted and validated |
+
+## Participation history
+
+View your ponencia submissions across all events at `/ponente/historial/`.
+
+## Settings
+
+Update your speaker profile and account preferences at `/ponente/configuracion/`.

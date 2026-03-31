@@ -1,0 +1,96 @@
+---
+title: "Event management"
+description: "Creating and managing events through the full BORRADOR → PUBLICADO → CERRADO lifecycle."
+keywords: ["event", "evento", "lifecycle", "borrador", "publicado", "cerrado", "coordinator", "administrator"]
+---
+
+Events are the top-level entity in SIGEP. Every other record — inscriptions, schedules, spaces, rubrics, and reports — belongs to an event. The `Evento` model lives in the `administrador` app and drives the entire platform lifecycle.
+
+## Event fields
+
+| Field | Type | Description |
+|---|---|---|
+| `titulo` | `CharField(200)` | Event title displayed across the platform |
+| `descripcion` | `TextField` | Full description of the event |
+| `fecha` | `DateField` | The scheduled date of the event |
+| `lugar` | `CharField(150)` | Physical or virtual location |
+| `cupo` | `PositiveIntegerField` | Maximum number of participants (0 = unlimited) |
+| `estado` | `CharField` | Current lifecycle state: `BORRADOR`, `PUBLICADO`, or `CERRADO` |
+| `creado_por` | `ForeignKey(User)` | The user who created the event |
+| `creado_en` | `DateTimeField` | Timestamp when the event was created (auto-set) |
+| `actualizado_en` | `DateTimeField` | Timestamp of the last update (auto-set) |
+
+## Event lifecycle
+
+Events move through three states in a fixed progression. The state controls what participants, speakers, and evaluators can do within the event.
+
+<Tabs>
+  <Tab title="BORRADOR (Draft)">
+    The initial state when an event is created. In this state:
+
+    - The event is not visible to participants or speakers for registration.
+    - The coordinator can configure all event details, schedule activities, define spaces, and set up rubrics.
+    - No inscriptions can be submitted by participants or speakers.
+
+    **Who can set this state:** Administrators (via `/administrador/eventos/`) create events in `BORRADOR` by default. Coordinators can also create events via `/coordinador/evento/crear/`.
+  </Tab>
+  <Tab title="PUBLICADO (Published)">
+    The active state. In this state:
+
+    - Participants can register projects and speakers can submit ponencias.
+    - Evaluators can be assigned and can submit evaluations.
+    - The coordinator can still update schedule activities and spaces.
+    - The public ranking dashboard at `/` displays live scores.
+
+    **Who can set this state:** Coordinators change the event state via `POST /coordinador/evento/<pk>/estado/`.
+  </Tab>
+  <Tab title="CERRADO (Closed)">
+    The terminal state. In this state:
+
+    - No new inscriptions, project registrations, or ponencia submissions are accepted.
+    - Reports and certificates can still be generated for the closed event.
+    - All historical data remains accessible to coordinators and administrators.
+
+    **Who can set this state:** Coordinators change the event state via `POST /coordinador/evento/<pk>/estado/`.
+
+    <Note>
+      Once an event is **CERRADO**, participants can no longer register for it. Ensure all inscriptions and submissions are complete before closing an event.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Lifecycle transitions
+
+```
+BORRADOR → PUBLICADO → CERRADO
+```
+
+State transitions flow in one direction only. The coordinator triggers transitions by sending a `POST` request to `/coordinador/evento/<pk>/estado/`. There is no path from `CERRADO` back to `PUBLICADO` or `BORRADOR`.
+
+## Managing events
+
+<Steps>
+  <Step title="Create the event">
+    An administrator creates the event at `/administrador/eventos/`, or a coordinator creates it at `/coordinador/evento/crear/`. The event starts in the `BORRADOR` state.
+  </Step>
+  <Step title="Configure details">
+    With the event selected, the coordinator accesses the full event management dashboard at `/coordinador/gestion/` to configure schedules, spaces, rubrics, and inscriptions.
+  </Step>
+  <Step title="Publish the event">
+    When configuration is complete, the coordinator changes the state to `PUBLICADO` via `/coordinador/evento/<pk>/estado/`. Participants and speakers can now register.
+  </Step>
+  <Step title="Close the event">
+    After the event concludes, the coordinator changes the state to `CERRADO`. Reports and certificates can then be generated from the archived data.
+  </Step>
+</Steps>
+
+## URL reference
+
+| Role | URL | Purpose |
+|---|---|---|
+| Administrator | `/administrador/eventos/` | Create and list all events |
+| Coordinator | `/coordinador/eventos/` | List events scoped to the coordinator |
+| Coordinator | `/coordinador/evento/crear/` | Create a new event |
+| Coordinator | `/coordinador/evento/<pk>/estado/` | Change event state |
+| Coordinator | `/coordinador/evento/<pk>/eliminar/` | Delete an event |
+| Coordinator | `/coordinador/gestion/` | Full event management dashboard |

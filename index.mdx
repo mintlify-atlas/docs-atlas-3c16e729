@@ -1,97 +1,66 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Welcome to SIGEP"
+description: "The complete academic event management platform — from event creation and registration to evaluations, scheduling, and certificate generation."
 ---
 
-## Setting up
+SIGEP is a Django-based platform for managing the full lifecycle of academic conferences, symposiums, and science fairs. It brings together five specialized role dashboards — Administrator, Coordinator, Evaluator, Speaker, and Participant — into a single cohesive system.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Set up your first event and invite users in minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Roles overview" icon="users" href="/roles-overview">
+    Understand the five roles and what each can do.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Core features" icon="star" href="/features/event-management">
+    Explore event management, evaluations, scheduling, and more.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Reference" icon="book" href="/reference/models-overview">
+    Browse data models and URL reference documentation.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## How SIGEP works
 
-Everything you need to create world-class documentation.
+SIGEP organizes academic events through five interconnected modules, each designed for a specific role in the event workflow.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+<Steps>
+  <Step title="Create an event">
+    An **Administrator** creates the event and assigns a **Coordinator**. The event starts in *Draft* state.
+  </Step>
+  <Step title="Configure and publish">
+    The **Coordinator** sets up the schedule, registration rules, rubrics, and venue spaces — then publishes the event so participants and speakers can register.
+  </Step>
+  <Step title="Register and submit">
+    **Participants** register their projects and **Speakers** submit their presentation materials, CVs, and biographical summaries through their dedicated panels.
+  </Step>
+  <Step title="Evaluate">
+    **Evaluators** receive assigned projects or presentations, complete rubric-based scoring forms, and submit their evaluations. A public ranking dashboard tracks real-time results.
+  </Step>
+  <Step title="Close and certify">
+    The Coordinator closes the event. Participants and Speakers can download PDF certificates of participation directly from their dashboards.
+  </Step>
+</Steps>
 
-## Need inspiration?
+## Key features
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Event lifecycle" icon="calendar" href="/features/event-management">
+    Draft → Published → Closed state machine with full coordinator control.
+  </Card>
+  <Card title="Registrations" icon="clipboard-list" href="/features/registration-inscriptions">
+    Participant project registration and speaker ponencia submissions with document tracking.
+  </Card>
+  <Card title="Evaluations & rubrics" icon="clipboard-check" href="/features/evaluations-rubrics">
+    Configurable rubrics with per-criteria scoring and conflict-aware evaluator assignment.
+  </Card>
+  <Card title="Scheduling & spaces" icon="map-pin" href="/features/scheduling-spaces">
+    Venue space management with time-overlap conflict detection.
+  </Card>
+  <Card title="Reports & certificates" icon="file-pdf" href="/features/reports-certificates">
+    PDF and XLSX report generation plus downloadable participation certificates with unique folio numbers.
+  </Card>
+  <Card title="Audit log" icon="shield-check" href="/roles/administrator">
+    Complete authentication and data-change audit trail accessible to Administrators.
+  </Card>
+</CardGroup>

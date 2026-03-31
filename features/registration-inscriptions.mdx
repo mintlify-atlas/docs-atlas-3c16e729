@@ -1,0 +1,122 @@
+---
+title: "Registration and inscriptions"
+description: "How participants and speakers register for events, including project submissions and ponencia workflows."
+keywords: ["registration", "inscription", "participant", "speaker", "ponencia", "proyecto", "inscripcion"]
+---
+
+SIGEP supports two independent registration flows for a published event: participants submit projects, and speakers submit ponencias. Both flows are tracked through their own review states. A separate `Inscripcion` record links any user to an event with a specific role.
+
+<Tabs>
+  <Tab title="Participant project registration">
+    Participants register by submitting a `ProyectoParticipante` record tied to an event. Each participant can submit one project per event.
+
+    ### Project fields
+
+    | Field | Type | Description |
+    |---|---|---|
+    | `nombre_proyecto` | `CharField(220)` | Title of the submitted project |
+    | `categoria` | `CharField` | Thematic category (see below) |
+    | `resumen` | `TextField` | Project abstract |
+    | `presentacion` | `FileField` | Presentation file — PDF, PPT, or PPTX, max 25 MB |
+    | `informe` | `FileField` | Written report — PDF, DOC, or DOCX, max 15 MB |
+    | `requerimientos_tecnicos` | `TextField` | Technical requirements for the presentation |
+    | `numero_integrantes` | `PositiveIntegerField` | Number of team members (minimum 1) |
+    | `estado` | `CharField` | Submission review state |
+
+    ### Categories
+
+    | Value | Display |
+    |---|---|
+    | `TECNOLOGIA` | Tecnología |
+    | `INNOVACION` | Innovación |
+    | `INVESTIGACION` | Investigación |
+    | `SOCIAL` | Impacto social |
+    | `EMPRESARIAL` | Emprendimiento |
+
+    ### Submission states
+
+    | State | Meaning |
+    |---|---|
+    | `REGISTRADO` | Submitted, awaiting review |
+    | `EN_REVISION` | Under coordinator review |
+    | `ACEPTADO` | Accepted for the event |
+    | `RECHAZADO` | Rejected; participant cannot present |
+
+    <Tip>
+      The `porcentaje_documentacion()` method on `ProyectoParticipante` calculates the percentage of required documents completed. It counts a non-empty `resumen`, an uploaded `presentacion`, and an uploaded `informe` out of 3 total items. This percentage is shown to participants in their dashboard so they can track submission progress.
+    </Tip>
+
+    Participants can edit their project while it is in the `REGISTRADO` or `EN_REVISION` state. Once the project is `ACEPTADO` or `RECHAZADO`, edits are blocked.
+  </Tab>
+  <Tab title="Speaker ponencia submission">
+    Speakers submit a `Ponencia` record linked to an event. Each speaker can submit one ponencia per event.
+
+    ### Ponencia fields
+
+    | Field | Type | Description |
+    |---|---|---|
+    | `titulo` | `CharField(240)` | Title of the presentation |
+    | `tipo` | `CharField(120)` | Presentation type (free text) |
+    | `area_tematica` | `CharField(160)` | Thematic area (free text) |
+    | `resumen` | `TextField` | Abstract |
+    | `autores` | `TextField` | Author list |
+    | `requerimientos_tecnicos` | `TextField` | Technical requirements |
+    | `estado` | `CharField` | Submission review state |
+
+    ### Submission states
+
+    | State | Meaning |
+    |---|---|
+    | `REGISTRADA` | Submitted, awaiting review |
+    | `EN_REVISION` | Under coordinator review |
+    | `ACEPTADA` | Accepted for the event |
+    | `RECHAZADA` | Rejected |
+
+    ### Document workflow
+
+    Each ponencia tracks three required documents independently. Each document has its own status field:
+
+    | Document field | Status field | Accepted formats | Max size |
+    |---|---|---|---|
+    | `cv_documento` | `cv_estado` | PDF | 10 MB |
+    | `resena_biografica` | `resena_estado` | PDF | 10 MB |
+    | `diapositivas_presentacion` | `diapositivas_estado` | PDF, PPT, PPTX | 25 MB |
+
+    Each status field cycles through these values:
+
+    | Value | Meaning |
+    |---|---|
+    | `PENDIENTE` | Document not yet submitted or not reviewed |
+    | `EN_REVISION` | Document under coordinator review |
+    | `VALIDADO` | Document approved |
+
+    <Tip>
+      The `porcentaje_documentacion()` method on `Ponencia` calculates document completion out of 4 items: `cv_documento`, `resena_biografica`, `diapositivas_presentacion`, and `requerimientos_tecnicos` (non-empty). This percentage is displayed to the speaker so they can see how much of their submission is complete.
+    </Tip>
+
+    Speakers can edit their ponencia while it is `REGISTRADA` or `EN_REVISION`, and only when the event is `PUBLICADO`.
+  </Tab>
+</Tabs>
+
+## Inscription model
+
+The `Inscripcion` model links a user to an event with a role. It enforces a unique constraint on `(evento, usuario)` — one user can only hold one role per event.
+
+### Available roles
+
+| Role value | Description |
+|---|---|
+| `ADMINISTRADOR` | Platform administrator |
+| `COORDINADOR` | Event coordinator |
+| `EVALUADOR` | Assigned evaluator |
+| `PONENTE` | Speaker |
+| `PARTICIPANTE` | Participant |
+| `USUARIO` | General user |
+
+## Managing inscriptions
+
+Coordinators manage all inscriptions for the active event at `/coordinador/inscripciones/`. From there, you can:
+
+- View all inscriptions and their assigned roles.
+- Add or remove individual inscriptions via `/coordinador/inscripciones/guardar/` and `/coordinador/inscripciones/<user_id>/eliminar/`.
+- Export the full inscription list as a CSV file via `/coordinador/inscripciones/exportar/csv/`.
